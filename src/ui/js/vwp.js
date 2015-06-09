@@ -16,7 +16,7 @@ var vwp = (function () {
 	//load modules
 	var modules = [ 
 	new Header.module("header"), new Footer.module("footer")
-	, new Item.module("item"), new Api.module("api")
+	, new Item.module("item"), new Api.module("api"), new Browse.module('browse')
 	//, new browse.module("browse"), 
 	//, new Data.module("data")  
 	];

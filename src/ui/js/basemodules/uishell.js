@@ -92,8 +92,8 @@ var uishell = (function() {
 	};
 
 	onHashchange = function(event) {
-		console.log('onHashChange')
-		//get current anchor map
+		console.log('onHashChange: ')
+				//get current anchor map
 		var anchor_map_previous = copyAnchorMap(), 
 		anchor_map_proposed;
 		//#!page=profile:uname,wendy|online,today&slider=confirm:text,hello|pretty,false&color=red 
@@ -102,6 +102,8 @@ var uishell = (function() {
 		// attempt to parse anchor
 		try {
 			anchor_map_proposed = $.uriAnchor.makeAnchorMap();
+			console.log('proposed anchor: ' + anchor_map_proposed.body);  
+
 		} catch (error) {
 			$.uriAnchor.setAnchor(anchor_map_previous, null, true);
 			return false;
@@ -115,10 +117,10 @@ var uishell = (function() {
 		if(null == stateMap.anchor_map.body){
 			$.uriAnchor.setAnchor(
 			{	
-				//body : 'browse'
-				//,_body : {searchtext   : ''}
-				body : 'item'
-				,_body : {id   : 0, name: 's'}
+				body : 'browse'
+				,_body : {searchtext   : ''}
+				//body : 'item'
+				//,_body : {id   : 0, name: 's'}
 
 			});
 

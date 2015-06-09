@@ -6,10 +6,10 @@ module.exports = function(grunt) {
 		concat:{
 			dist: {
         			src: [ 
-            				'src/ui/js/libs/*.js', // All JS in the libs folder
-                            'src/ui/js/basemodules/*.js', 
-                            'src/ui/js/uimodules/*.js', // all js modules
-            				'src/ui/js/*.js'  // This specific file
+            				'src/ui/js/libs/*.js' // All JS in the libs folder
+                            ,'src/ui/js/basemodules/*.js'
+                            ,'src/ui/js/uimodules/*.js' // all js modules
+            				,'src/ui/js/*.js'  // This specific file
                             
         			],
         			dest: 'dist/ui/js/vwp.js'

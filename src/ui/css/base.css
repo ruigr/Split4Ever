@@ -3316,6 +3316,57 @@ input[type="button"].btn-block {
 }
 
 
+/*.thumbnail-browse-fix {
+   -webkit-box-shadow: 0 0px 0px rgba(0, 0, 0, 0); 
+   box-shadow: 0 0px 0px rgba(0, 0, 0, 0); 
+}*/
+
+.thumbnail-browse-fix {
+  -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.5);
+  -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.5);
+  box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.5);
+  padding-bottom: 3px;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-top: 3px;
+}
+
+
+.label-default {
+
+  background-color: #777;
+  display: inline-block;
+  /*margin-bottom: 0;*/
+  font-weight: normal;
+  text-align: center;
+  vertical-align: middle;
+  background-image: none;
+  white-space: nowrap;
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  border-radius: 4px;
+  color: white;
+}
+
+.caption-browse-fix {
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-bottom: 6px;
+}
+
+
+
+
+
+
+
+
+.center-block {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
 
 .header {
 	/*position: absolute;*/

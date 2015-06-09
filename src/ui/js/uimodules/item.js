@@ -225,10 +225,10 @@ var Item = (function(){
 			if(valid){
 
 				var callback = {
-					ok: function(){
+					ok: function(o){
 						window.location.hash = '#body=browse';
 					},
-					nok: function(){
+					nok: function(o){
 						alert('not ok');
 					}
 				};
@@ -246,18 +246,30 @@ var Item = (function(){
 			this.modelImages2ui(data);
 		}
 		else if(event == "onBody" && null != data.body && data.body == "item"){
+
 			if(!this.isActive()){
 				this.setActive(true);
 				this.configMap.container.html(this.configMap.main_html);
 				this.setJqueryMap(this.configMap.container);
-		
-				/*
-				if(null != data.config){
-					pubsub.publish( 'retrieveData', this.loadData);	
-				}
-				pubsub.publish( 'retrieveData', this.loadData);
-				*/
 				this.setEvents();
+			}
+
+			if(data.config.id){
+				var callback = (function(module){
+					var mod = module;
+
+					var ok= function(o){
+						mod.model2ui(o);
+					};
+					var nok= function(o){
+						alert('not ok');
+					};
+					return {
+						ok: ok,
+						nok: nok
+					};
+				}(this));
+				this.configMap.api.getItem(data.config.id, callback);
 			}
 			else {
 				var newItem = {
@@ -269,10 +281,11 @@ var Item = (function(){
 				};
 				this.model2ui(newItem);
 			}
+
 		}
 		else {
 				if(this.isActive()){
-					this.stateMap.jqueryMap.$container.remove();
+					this.stateMap.jqueryMap.$container.empty();
 					this.setJqueryMap(null);
 					this.setActive(false);
 				}

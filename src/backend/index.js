@@ -1,5 +1,4 @@
-var PORT=3000;
-
+var custom = require('./custom.js');
 var util = require('util');
 var express = require('express');
 var model = require('./model.js');
@@ -12,12 +11,27 @@ app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(multer()); // for parsing multipart/form-data
 
-app.use(express.static('dist/ui'));
+var options = {
+  dotfiles: 'ignore',
+  etag: false,
+   extensions: ['png', 'html'],
+  //index: false,
+  redirect: false
+};
 
-app.get('/api/item/all', 
+var PORT=process.env.PORT;
+
+if(custom.areWeOnDocker())
+	app.use(express.static('ui', options));
+else
+	app.use(express.static('dist/ui', options));
+
+
+
+app.get('/api/items', 
 	function(req,res){
 		
-		console.log('@get/api/item/all');
+		console.log('@get/api/items');
 		var callback = {
 			ok:function(o){
 				console.log('ok: ' + util.inspect(o));
@@ -38,7 +52,20 @@ app.get('/api/item/all',
 
 app.get('/api/item/:id', 
 	function(req,res){
-		var id = request.params.id;
+		console.log('@post/api/item');
+		var id = req.params.id;
+		var callback = {
+			ok:function(o){
+				console.log('ok:' + util.inspect(o));
+				res.writeHead(200, {'Content-Type': 'text/plain'});
+				res.end();
+			},
+			nok: function(o){
+				console.log('nok: ' + o);	
+			}
+		};
+		console.log(req.body);
+		model.get(id, callback);
 	}
 );
 
@@ -75,6 +102,7 @@ app.delete('/api/item',
 
 	}
 );
+
 
 
 var server = app.listen(PORT, function () {

@@ -1,9 +1,14 @@
 //mongodb://username:password@hostname:port/database
-var DB_CONNECT_STRING = 'mongodb://localhost:27017/vwparts';
+var custom = require('./custom.js');
 var mongoose = require('mongoose');
+
+//var DB_CONNECT_STRING = 'mongodb://app:password@172.28.245.101:27017/vwparts';
+var DB_CONNECT_STRING = process.env.DB_CONN_STR;
+
+if(custom.areWeOnBluemix() && custom.doWeHaveServices())
+	DB_CONNECT_STRING = custom.getMongoConnectString();
+
 mongoose.connect(DB_CONNECT_STRING);
-
-
 
 var Model = function() {
 
@@ -45,7 +50,8 @@ var Model = function() {
   				console.error(err);
   				callback.nok(null);
   			}
-  			callback.ok(item);
+  			else
+  				callback.ok(item);
 		});
 		console.log('Model.post@');
 	};	
@@ -57,14 +63,31 @@ var Model = function() {
   				console.error(err);
   				callback.nok(null);
   			}
-  			callback.ok(items);
+  			else
+  				callback.ok(items);
 		});
 		console.log('Model.getAll@');
 	};
 
+	var get  = function(idVal, callback) {
+		console.log('@Model.get');
+
+		var searchItem = { id: idVal};
+		Item.findOne(searchItem, 'id name images price notes', function (err, item) {
+  			if (err) {
+  				console.error(err);
+  				callback.nok(idVal);
+  			}
+  			else
+  				callback.ok(item);
+		});
+		console.log('Model.get@');
+	};
+
 	return { 
 		post: post,
-		getAll: getAll
+		getAll: getAll,
+		get: get
 	}; 
 
 }();
