@@ -17,14 +17,14 @@ ice stop $CONTAINER_NAME
 sleep 8
 ice rm $CONTAINER_NAME
 sleep 8
-#ice rmi $REGISTRY/$ORG/$CONTAINER_NAME:latest
-ice --local pull $REGISTRY/ibmnode
+ice rmi $REGISTRY/$ORG/$CONTAINER_NAME:latest
 
+ice --local pull $REGISTRY/ibmnode
 ice --local build -t $CONTAINER_NAME .
-ice --local tag anpr $REGISTRY/$ORG/$CONTAINER_NAME
+ice --local tag $CONTAINER_NAME $REGISTRY/$ORG/$CONTAINER_NAME
 ice --local push $REGISTRY/$ORG/$CONTAINER_NAME
 
-ice run --name $CONTAINER_NAME $REGISTRY/$ORG/$CONTAINER_NAME:latest /bin/sh
-#ice run --name $CONTAINER_NAME -p $PORT $REGISTRY/$ORG/$CONTAINER_NAME:latest
-
+ice run --name $CONTAINER_NAME -p $PORT $REGISTRY/$ORG/$CONTAINER_NAME:latest
 ice ip bind $IP $CONTAINER_NAME
+
+#ssh -i ~/.ssh/id_rsa root@129.41.227.180

@@ -21,7 +21,7 @@ sleep 8
 ice --local pull $REGISTRY/ibmnode
 
 ice --local build -t $CONTAINER_NAME .
-#ice --local tag anpr $REGISTRY/$ORG/$CONTAINER_NAME
+#ice --local tag $CONTAINER_NAME $REGISTRY/$ORG/$CONTAINER_NAME
 
 ice --local run -d -p $PORT:$PORT $CONTAINER_NAME
 #ice --local run -i -t -P=true  --entrypoint /bin/bash $CONTAINER_NAME

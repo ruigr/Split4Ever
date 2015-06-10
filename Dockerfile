@@ -1,6 +1,6 @@
 FROM registry-ice.ng.bluemix.net/ibmnode:latest
 RUN apt-get -y update
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install git sed bc vim imagemagick
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install git sed bc vim ssh imagemagick
 
 ENV DOCKER true
 ENV CONTEXT bluemix
@@ -10,7 +10,10 @@ ENV DB_CONN_STR DUMMY
 WORKDIR /
 RUN mkdir -p /app
 ADD dist /app
-ADD package.json /app/package.json
+ADD package.json /app/
+COPY id_rsa.pub /root/.ssh/
+RUN cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
+
 
 WORKDIR /app
 RUN npm install -d --production 
