@@ -13,12 +13,12 @@ sed -i -- "s/PORT.*/PORT\ $PORT/g" Dockerfile
 sed -i -- "s/DB_CONN_STR.*/DB_CONN_STR\ $DB_CONNECTION_STR/g" Dockerfile
 
 
-ice --local stop $CONTAINER_NAME
-sleep 8
-ice --local rm $CONTAINER_NAME
-sleep 8
+#ice --local stop $CONTAINER_NAME
+#sleep 8
+#ice --local rm $CONTAINER_NAME
+#sleep 8
 
-ice --local pull $REGISTRY/ibmnode
+#ice --local pull $REGISTRY/ibmnode
 
 ice --local build -t $CONTAINER_NAME .
 #ice --local tag $CONTAINER_NAME $REGISTRY/$ORG/$CONTAINER_NAME

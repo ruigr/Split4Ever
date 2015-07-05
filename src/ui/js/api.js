@@ -8,7 +8,7 @@ var Api = (function(){
 	module.prototype.constructor = module;
 	
 	/*	item: {
-				id: null,
+				_id: null,
 				images:[],
 				name: '',
 				notes: '',

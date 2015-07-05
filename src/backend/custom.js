@@ -39,7 +39,7 @@ var Custom = function() {
 		for (var svcName in vcapServices) {
 		    if (svcName.match(/^mongo.*/)) {
 		      result = vcapServices[svcName][0].credentials.uri;
-		      result = result || vcapServices[svcName][0].credentials.url;
+		      //result = result || vcapServices[svcName][0].credentials.url;
 		      break;
 		    }
 		}
@@ -47,11 +47,22 @@ var Custom = function() {
 		return result;
 	};
 
+	var sleep = function(milliseconds) {
+	  var start = new Date().getTime();
+	  while((new Date().getTime() - start) < milliseconds);
+	};
+
+	var log = function(msg){
+		console.log('[' + new Date().toString() + '] ' + msg);
+	};
+
 	return { 
 		areWeOnDocker: areWeOnDocker,
 		areWeOnBluemix: areWeOnBluemix,
 		getMongoConnectString: getMongoConnectString,
-		doWeHaveServices: doWeHaveServices
+		doWeHaveServices: doWeHaveServices,
+		sleep: sleep,
+		log: log
 	}; 
 
 }();

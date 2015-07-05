@@ -19,7 +19,9 @@ var options = {
   redirect: false
 };
 
-var PORT=process.env.PORT;
+var PORT=3000;
+if(process.env.PORT)
+	PORT=process.env.PORT;
 
 if(custom.areWeOnDocker())
 	app.use(express.static('ui', options));
@@ -35,8 +37,6 @@ app.get('/api/items',
 		var callback = {
 			ok:function(o){
 				console.log('ok: ' + util.inspect(o));
-				//res.setHeader('Content-Type', 'application/json');
-				//res.writeHead(200);
 				res.status(200).send(o);
 				res.end();
 			},
@@ -47,17 +47,20 @@ app.get('/api/items',
 			}
 		};
 		model.getAll(callback);
+		console.log('get/api/items@');
 	}
 );
 
 app.get('/api/item/:id', 
 	function(req,res){
-		console.log('@post/api/item');
+		console.log('@get/api/item');
 		var id = req.params.id;
+		custom.log('id: ' + id);
 		var callback = {
 			ok:function(o){
 				console.log('ok:' + util.inspect(o));
-				res.writeHead(200, {'Content-Type': 'text/plain'});
+				//res.writeHead(200, {'Content-Type': 'text/plain'});
+				res.status(200).send(o);
 				res.end();
 			},
 			nok: function(o){

@@ -15,7 +15,7 @@ var Browse = (function(){
 	module.prototype.constructor = module;
 	/*
 		item: {
-				id: null,
+				_id: null,
 				images:[],
 				name: '',
 				notes: '',
@@ -35,7 +35,7 @@ var Browse = (function(){
 		widget2.classList.add("thumbnail-browse-fix");
 
 		var anchorWidget = document.createElement("a");
-		anchorWidget.setAttribute("href",window.location.origin + '/#body=item:id,' + item.id );
+		anchorWidget.setAttribute("href",window.location.origin + '/#body=item:id,' + item._id );
 	
 		
 		var imgWidget = document.createElement("img");

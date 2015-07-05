@@ -48,7 +48,7 @@ var Item = (function(){
 			anchor_map : {},
 			jqueryMap : {},
 			item: {
-				id: null,
+				_id: null,
 				images:[],
 				name: '',
 				notes: '',
@@ -100,7 +100,7 @@ var Item = (function(){
 				return { callback: callbackFunc};
 			};
 
-
+			//collect images
 			var images=[];
 
 			//so we try to find the new files
@@ -134,10 +134,10 @@ var Item = (function(){
 
 		this.stateMap.item = model;
 
-		this.stateMap.jqueryMap.$price.value = model.price;
-		this.stateMap.jqueryMap.$name.value = model.name;
-		this.stateMap.jqueryMap.$notes.value = model.notes;
-		this.stateMap.jqueryMap.$file.value = model.file;
+		this.stateMap.jqueryMap.$price[0].value = model.price;
+		this.stateMap.jqueryMap.$name[0].value = model.name;
+		this.stateMap.jqueryMap.$notes[0].value = model.notes;
+		this.stateMap.jqueryMap.$file[0].value = model.file;
 
 	};
 
@@ -254,7 +254,7 @@ var Item = (function(){
 				this.setEvents();
 			}
 
-			if(data.config.id){
+			if(data.config && data.config.id){
 				var callback = (function(module){
 					var mod = module;
 
@@ -273,7 +273,7 @@ var Item = (function(){
 			}
 			else {
 				var newItem = {
-					id: null,
+					_id: null,
 					images:[],
 					name: null,
 					notes: null,
