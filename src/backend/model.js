@@ -54,21 +54,41 @@ var Model = (function(){
 
 	var post = function(o, callback) {
 		custom.log('@Model.post');
-		if(! o._id ) 
+		if(! o._id ) {
 			o._id = new ObjectID();
+			dbcnx.get().collection('items').insertOne(o,
+				function(err,result){
+					if (err) {
+		  				console.error(err);
+		  				callback.nok(null);
+		  			}
+		  			else {
+		  				console.log('item save successful: ' + util.inspect(result));
+		  				callback.ok(result);
+		  			}
+				}
+			);
+		}
+		else {
+			o._id = new ObjectID(o._id);
+			dbcnx.get().collection('items').replaceOne(
+				{'_id' : o._id},
+				o,
+				function(err,result){
+					if (err) {
+		  				console.error(err);
+		  				callback.nok(null);
+		  			}
+		  			else {
+		  				console.log('item save successful: ' + util.inspect(result));
+		  				callback.ok(result);
+		  			}
+				}
+			);
 
-		dbcnx.get().collection('items').insertOne(o,
-			function(err,result){
-				if (err) {
-	  				console.error(err);
-	  				callback.nok(null);
-	  			}
-	  			else {
-	  				console.log('item save successful: ' + util.inspect(result));
-	  				callback.ok(result);
-	  			}
-			}
-		);
+		}
+
+		
 	};
 
 	var getAll  = function(callback) {
@@ -96,7 +116,7 @@ var Model = (function(){
 
 	var get  = function(idVal, callback) {
 		custom.log('@Model.get[' + idVal  + ']');
-		
+
 		var cursor = dbcnx.get().collection('items').find({'_id': new ObjectID(idVal)});
 		var result = null;
 		cursor.each(function(err, item) {
@@ -113,10 +133,29 @@ var Model = (function(){
 		console.log('Model.get@');
 	};
 
+	var del = function(id, callback) {
+		custom.log('@Model.del');
+		dbcnx.get().collection('items').deleteOne(
+			{'_id': new ObjectID(id)},
+			function(err,result){
+				if (err) {
+	  				console.error(err);
+	  				callback.nok(null);
+	  			}
+	  			else {
+	  				console.log('item del successful: ' + util.inspect(result));
+	  				callback.ok(result);
+	  			}
+			}
+		);
+		console.log('Model.del@');		
+	};
+
 	return { 
 		post: post,
 		getAll: getAll
 		,get: get
+		,del: del
 	}; 
 
 }());

@@ -40,11 +40,14 @@ var Header = (function(){
 	module.prototype.setGuiState = function(state) {
 
 		if(1 > this.stateMap.jqueryMap.$hd1.children().length){
+			var anchorWidget = document.createElement("a");
+			anchorWidget.setAttribute("href",window.location.origin + '/#body=browse' );
 			//'<img src="img/header.png" class="img-rounded"/>' + 
 			var imgWidget = document.createElement("img");
 			imgWidget.setAttribute("src","img/header.png");
 			imgWidget.classList.add("img-rounded");
-			this.stateMap.jqueryMap.$hd1.append(imgWidget);
+			anchorWidget.appendChild(imgWidget);
+			this.stateMap.jqueryMap.$hd1.append(anchorWidget);
 		}
 
 		if(state == this.stateMap.gui){

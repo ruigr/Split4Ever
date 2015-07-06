@@ -4,7 +4,7 @@ var Item = (function(){
 		common.UIMod.call(this,name);
 		this.active = false;
 		this.configMap = {
-			events: ['onBody', 'submitItem', 'uiItemChange', 'modelItemChange', 'modelItemImagesChange'],
+			events: ['onBody', 'submitItem', 'uiItemChange', 'modelItemChange', 'delItem', 'uiValid', 'uiEditMode'], //, 'modelItemImagesChange'
 			main_html : '<form class="form-horizontal"> ' +
 				  '<div class="form-group"> ' +
 				    '<label for="inputName" class="col-sm-2 control-label">name</label> ' +
@@ -36,7 +36,10 @@ var Item = (function(){
 				    '</div> ' +
 				'</div> ' +
 				'<div class="form-group"> ' +
-				    '<div class="col-sm-offset-10 col-sm-2"> ' +
+				    '<div class="col-sm-offset-8 col-sm-2"> ' +
+				      '<button type="submit" class="btn btn-default pull-right" id="remove">Remove</button> ' +
+				    '</div> ' +
+				    '<div class="col-sm-2"> ' +
 				      '<button type="submit" class="btn btn-default pull-right" id="submit">Submit</button> ' +
 				    '</div> ' +
 				'</div> ' +
@@ -70,7 +73,8 @@ var Item = (function(){
 				$file : $container.find('#file'),
 				$name : $container.find('#inputName'),
 				$notes : $container.find('#inputNotes'),
-				$submit : $container.find('#submit')
+				$submit : $container.find('#submit'),
+				$remove : $container.find('#remove')
 			};
 		}
 		else {
@@ -91,17 +95,24 @@ var Item = (function(){
 
 		if(el.id == 'file'){
 
-			var FileReaderCallBack = function(image, model){
-				var image = image;
+			var FileReaderCallBack = function(image,jqueryMap){
 				var callbackFunc = function(data){
 					image.data = 'data:image/jpeg;base64,' + data;
-					pubsub.publish( 'modelItemImagesChange', model);
+					var img = document.createElement("img");
+					img.classList.add("img-responsive");
+					img.classList.add("img-thumbnail");
+					img.classList.add("col-sm-4");
+					img.file = image.name;
+					img.src = image.data;
+					jqueryMap.$images.append(img);
+					jqueryMap.$file[0].files[i]=img.file;
 				};
 				return { callback: callbackFunc};
 			};
 
 			//collect images
 			var images=[];
+			this.stateMap.jqueryMap.$images.empty();
 
 			//so we try to find the new files
 			for (var i=0; i < el.files.length;i++) {
@@ -111,12 +122,10 @@ var Item = (function(){
 				newImage.name=selection.name;
 				newImage.type=selection.type;
 				images.push(newImage);
-				this.readFileAsBase64(el.files[i], FileReaderCallBack(newImage, this.stateMap.item).callback);				
+				this.readFileAsBase64(el.files[i], FileReaderCallBack(newImage, this.stateMap.jqueryMap).callback);				
 			}
 			this.stateMap.item.images=images;
-			if(images.length == 0){
-				pubsub.publish( 'modelItemImagesChange', this.stateMap.item);
-			}
+			//this.renderImages();
 
 		}
 		if(el.id == 'inputName'){
@@ -130,6 +139,25 @@ var Item = (function(){
 		}
 	};
 
+	module.prototype.renderImages = function(){
+
+		this.stateMap.jqueryMap.$file[0].files = [];
+		this.stateMap.jqueryMap.$file[0].value=null;
+		this.stateMap.jqueryMap.$images.empty();
+		for (var i=0; i < this.stateMap.item.images.length;i++) {
+			var image = this.stateMap.item.images[i];
+			var img = document.createElement("img");
+			img.classList.add("img-responsive");
+			img.classList.add("img-thumbnail");
+			img.classList.add("col-sm-4");
+			img.file = image.name;
+			img.src = image.data;
+			this.stateMap.jqueryMap.$images.append(img);
+			this.stateMap.jqueryMap.$file[0].files[i]=img.file;
+		}
+
+	};
+
 	module.prototype.model2ui = function(model){
 
 		this.stateMap.item = model;
@@ -137,34 +165,41 @@ var Item = (function(){
 		this.stateMap.jqueryMap.$price[0].value = model.price;
 		this.stateMap.jqueryMap.$name[0].value = model.name;
 		this.stateMap.jqueryMap.$notes[0].value = model.notes;
-		this.stateMap.jqueryMap.$file[0].value = model.file;
+		this.renderImages();
 
 	};
 
-	module.prototype.validation = function(item){
+	module.prototype.uiValidation = function(){
+		
 		var valid = true;
+
 		var widgets = [
 			this.stateMap.jqueryMap.$price[0],
 			this.stateMap.jqueryMap.$file[0],
 			this.stateMap.jqueryMap.$name[0],
 			this.stateMap.jqueryMap.$notes[0]
 		];
-		
+
 		for(var i = 0 ; i < widgets.length ; i++)
 			valid &= this.widgetValidation(widgets[i]);
-		
+
+		pubsub.publish('uiValid', valid);
+
 		return valid;
 	};
 
 	module.prototype.widgetValidation = function(item){
+		
 		var valid = false;
 
-		if(!item.value)
-			console.log('item empty');
+		if( item === this.stateMap.jqueryMap.$file[0] )
+			valid = (0 < item.value.length) || (0 < this.stateMap.item.images.length);	
 		else
-			valid = true;	
-	
+			if(item.value)
+				valid = true;
+
 		var formGroup=this.stateMap.jqueryMap.$container.find(item).parents('.form-group');
+
 		if(!valid) {
 			if(!formGroup.hasClass("has-error"))
 				formGroup.addClass("has-error");
@@ -173,25 +208,27 @@ var Item = (function(){
 			if(formGroup.hasClass("has-error"))
 				formGroup.removeClass("has-error");
 		}
+		
 		return valid;
 	};
 
-	module.prototype.modelImages2ui = function(model){
+	module.prototype.modelValidation = function(item){
+		console.log('@modelValidation');
+		var valid = true;
 
-		this.stateMap.jqueryMap.$images.empty();
-		for (var i=0; i < model.images.length;i++) {
-			var image = model.images[i];
-			var img = document.createElement("img");
-			img.classList.add("img-responsive");
-			img.classList.add("img-thumbnail");
-			img.classList.add("col-sm-4");
-			img.file = image.name;
-			img.src = image.data;
-			this.stateMap.jqueryMap.$images.append(img);
-		}	
+		if(!this.stateMap.item.name)
+			return false;
+		if(!this.stateMap.item.notes)
+			return false;
+		if(!this.stateMap.item.price)
+			return false;
+		if(1 > this.stateMap.item.images.length)
+			return false;
 
+		console.log('modelValidation@[' + valid + ']');
+		return valid;
 	};
-	
+
 
 	module.prototype.setEvents = function(){
 
@@ -213,17 +250,19 @@ var Item = (function(){
 			pubsub.publish('submitItem', this);
 		});
 
+		this.stateMap.jqueryMap.$remove.on('click',function(){
+			pubsub.publish('delItem', this);
+		});
+
 	};
 
 
 	module.prototype.onEvent = function(event, data){
 
 		if(event == 'submitItem'){
-			var valid = this.validation();
+			var valid = this.modelValidation();
 			console.log('form is valid?' + valid);
-
 			if(valid){
-
 				var callback = {
 					ok: function(o){
 						window.location.hash = '#body=browse';
@@ -235,15 +274,23 @@ var Item = (function(){
 				this.configMap.api.setItem(this.stateMap.item,callback);
 			}
 		}
+		else if (event == 'delItem') {
+			var callback = {
+				ok: function(o){
+					window.location.hash = '#body=browse';
+				},
+				nok: function(o){
+					alert('not ok');
+				}
+			};
+			this.configMap.api.delItem(this.stateMap.item._id,callback);
+		}
 		else if (event == 'uiItemChange') {
-			this.widgetValidation(data);
+			this.uiValidation(data);
 			this.ui2model(data);
 		}
 		else if (event == 'modelItemChange') {
 			this.model2ui(data);
-		}
-		else if (event == 'modelItemImagesChange') {
-			this.modelImages2ui(data);
 		}
 		else if(event == "onBody" && null != data.body && data.body == "item"){
 
@@ -255,6 +302,7 @@ var Item = (function(){
 			}
 
 			if(data.config && data.config.id){
+				pubsub.publish('uiEditMode', true);
 				var callback = (function(module){
 					var mod = module;
 
@@ -272,6 +320,8 @@ var Item = (function(){
 				this.configMap.api.getItem(data.config.id, callback);
 			}
 			else {
+				pubsub.publish('uiValid', false);
+				pubsub.publish('uiEditMode', false);
 				var newItem = {
 					_id: null,
 					images:[],
@@ -281,7 +331,18 @@ var Item = (function(){
 				};
 				this.model2ui(newItem);
 			}
-
+		}
+		else if (event == 'uiValid') {
+			if(data)
+				this.stateMap.jqueryMap.$submit.removeAttr('disabled');
+			else
+				this.stateMap.jqueryMap.$submit.attr('disabled', 'disabled');
+		}
+		else if (event == 'uiEditMode') {
+			if(data)
+				this.stateMap.jqueryMap.$remove.removeAttr('disabled');
+			else
+				this.stateMap.jqueryMap.$remove.attr('disabled', 'disabled');
 		}
 		else {
 				if(this.isActive()){

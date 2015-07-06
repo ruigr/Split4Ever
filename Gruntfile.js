@@ -6,10 +6,10 @@ module.exports = function(grunt) {
 		concat:{
 			dist: {
         			src: [ 
-            				'src/ui/js/libs/*.js' // All JS in the libs folder
+            				'src/ui/js/libs/*.js' 
                             ,'src/ui/js/basemodules/*.js'
-                            ,'src/ui/js/uimodules/*.js' // all js modules
-            				,'src/ui/js/*.js'  // This specific file
+                            ,'src/ui/js/uimodules/*.js'
+            				,'src/ui/js/*.js' 
                             
         			],
         			dest: 'dist/ui/js/vwp.js'
@@ -17,7 +17,7 @@ module.exports = function(grunt) {
 			
 			css: {
         			src: [
-            				'src/ui/css/*.css' // All css
+            				'src/ui/css/*.css' 
         			],
         			dest: 'dist/ui/css/vwp.css'
     			}
@@ -36,7 +36,7 @@ module.exports = function(grunt) {
               {flatten: true, expand: true, src: ['src/backend/**/*.js'], dest: 'dist/backend/'},
               {flatten: true, expand: true, src: ['src/ui/img/*'], dest: 'dist/ui/img'}
             ],
-          },
+          }
         },
 		watch: {
     			scripts: {
@@ -44,7 +44,7 @@ module.exports = function(grunt) {
         			tasks: ['concat'],
         			options: {
             				spawn: false
-        			},
+        			}
     			} ,
                 scripts: {
                     files: ['src/backend/**/*.js', 'src/ui/index.html'],

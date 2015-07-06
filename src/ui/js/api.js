@@ -37,6 +37,19 @@ var Api = (function(){
 		console.log('Api.getItem@');
 	};
 
+	module.prototype.delItem = function(id, callback){
+		console.log('@Api.eraseItem');
+
+		var url = window.location.origin + '/api/item/' + id;
+		$.ajax({
+		    url: url,
+		    type: 'DELETE',
+		    success: callback.ok,
+		    error: callback.nok
+		}); 
+		console.log('Api.eraseItem@');
+	};
+
 
 	return { module: module };
 

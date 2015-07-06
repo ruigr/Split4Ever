@@ -100,9 +100,22 @@ app.put('/api/item',
 	}
 );
 
-app.delete('/api/item', 
+app.delete('/api/item/:id', 
 	function(req,res){
-
+		console.log('@delete/api/item');
+		var id = req.params.id;
+		custom.log('id: ' + id);
+		var callback = {
+			ok:function(o){
+				console.log('ok:' + util.inspect(o));
+				res.writeHead(200, {'Content-Type': 'text/plain'});
+				res.end();
+			},
+			nok: function(o){
+				console.log('nok');	
+			}
+		};
+		model.del(id, callback)
 	}
 );
 
