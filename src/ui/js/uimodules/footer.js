@@ -10,11 +10,11 @@ var Footer = (function(){
 	module.prototype = Object.create(common.UIMod.prototype);
 	module.prototype.constructor = module;
 
-	module.prototype.setJqueryMap = function($container){
+	module.prototype.setJqueryMap = function(){
 
 		this.stateMap.jqueryMap = {
-			$container : $container,
-			$msg : $container.find('.msg')
+			$container : this.configMap.uicontainer,
+			$msg : this.configMap.uicontainer.find('.msg')
 		};
 
 

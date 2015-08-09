@@ -60,11 +60,12 @@ var Model = (function(){
 				function(err,result){
 					if (err) {
 		  				console.error(err);
-		  				callback.nok(null);
+		  				callback.nok(err);
 		  			}
 		  			else {
-		  				console.log('item save successful: ' + util.inspect(result));
-		  				callback.ok(result);
+		  				console.log('item save successful with id: ' + result.insertedId );
+		  				// + util.inspect(result));
+		  				callback.ok(result.insertedId);
 		  			}
 				}
 			);
@@ -80,7 +81,7 @@ var Model = (function(){
 		  				callback.nok(null);
 		  			}
 		  			else {
-		  				console.log('item save successful: ' + util.inspect(result));
+		  				console.log('item save successful');
 		  				callback.ok(result);
 		  			}
 				}
@@ -143,7 +144,7 @@ var Model = (function(){
 	  				callback.nok(null);
 	  			}
 	  			else {
-	  				console.log('item del successful: ' + util.inspect(result));
+	  				console.log('item del successful');
 	  				callback.ok(result);
 	  			}
 			}

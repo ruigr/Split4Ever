@@ -14,15 +14,36 @@
 var vwp = (function () {
 
 	//load modules
-	var modules = [ 
-	new Header.module("header"), new Footer.module("footer")
-	, new Item.module("item"), new Api.module("api"), new Browse.module('browse')
-	//, new browse.module("browse"), 
-	//, new Data.module("data")  
-	];
+	var modulesMap = {
+		'utils': new Utils.module("utils"), 
+		'pubsub': new PubSub.module("pubsub"),
+		'uishell': new UiShell.module("uishell"),
+		'header': new Header.module("header"), 
+		'footer': new Footer.module("footer"),
+		'item': new Item.module("item"), 
+		'api': new Api.module("api"), 
+		'browse': new Browse.module('browse'),
+		'itemui': new ItemUI.module("itemui") , 
+		'browseui': new BrowseUI.module("browseui")
+	};
+
+	//sort out dependencies
+	for(modName in modulesMap){
+		if(modulesMap.hasOwnProperty(modName)){
+			var module = modulesMap[modName];
+			for(depName in modulesMap){
+				if(depName != modName && modulesMap.hasOwnProperty(depName) && 
+					-1 < module.configMap.requires.indexOf(depName)){
+					var dependency = modulesMap[depName];
+					module.configMap.modules[depName]=dependency;
+					console.log('added module dependency ' + depName + ' to module ' + module.name);
+				}
+			}
+		}
+	}
 
 	var initModule = function ( $container ) {
-		uishell.initModule( $container , modules );
+		modulesMap['uishell'].initModule( $container );
 	};
 
 

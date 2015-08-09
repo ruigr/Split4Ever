@@ -8,7 +8,7 @@ var multer = require('multer');
 
 
 app.use(bodyParser.json()); // for parsing application/json
-app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true, limit: '10240kb' })); // for parsing application/x-www-form-urlencoded
 app.use(multer()); // for parsing multipart/form-data
 
 var options = {
@@ -36,12 +36,12 @@ app.get('/api/items',
 		console.log('@get/api/items');
 		var callback = {
 			ok:function(o){
-				console.log('ok: ' + util.inspect(o));
+				console.log('ok - got ' + o.length + ' items');
 				res.status(200).send(o);
 				res.end();
 			},
 			nok: function(o){
-				console.log('nok');	
+				console.log('nok - error: ' + util.inspect(o));	
 				res.status(400);
 				res.end();
 			}
@@ -58,13 +58,16 @@ app.get('/api/item/:id',
 		custom.log('id: ' + id);
 		var callback = {
 			ok:function(o){
-				console.log('ok:' + util.inspect(o));
+				console.log('ok - got item with id: ' + id);
+				console.log('ok: ' + util.inspect(o));
 				//res.writeHead(200, {'Content-Type': 'text/plain'});
 				res.status(200).send(o);
 				res.end();
 			},
 			nok: function(o){
-				console.log('nok: ' + o);	
+				console.log('nok - error: ' + util.inspect(o));	
+				res.status(400);
+				res.end();
 			}
 		};
 		console.log(req.body);
@@ -79,13 +82,16 @@ app.post('/api/item',
 		console.log('@post/api/item');
 
 		var callback = {
-			ok:function(o){
-				console.log('ok:' + util.inspect(o));
-				res.writeHead(200, {'Content-Type': 'text/plain'});
+			ok:function(id){
+				console.log('ok - posted item with id: ' + id);
+				//res.writeHead(200, {'Content-Type': 'text/plain'});
+				res.status(200).send(id);
 				res.end();
 			},
-			nok: function(o){
-				console.log('nok');	
+			nok: function(err){
+				console.log('nok - error: ' + util.inspect(err));	
+				res.status(400);
+				res.end();
 			}
 		};
 		console.log(req.body);
@@ -107,12 +113,14 @@ app.delete('/api/item/:id',
 		custom.log('id: ' + id);
 		var callback = {
 			ok:function(o){
-				console.log('ok:' + util.inspect(o));
+				console.log('ok - deleted item with id: ' + id);
 				res.writeHead(200, {'Content-Type': 'text/plain'});
 				res.end();
 			},
 			nok: function(o){
-				console.log('nok');	
+				console.log('nok - error: ' + util.inspect(o));	
+				res.status(400);
+				res.end();
 			}
 		};
 		model.del(id, callback)

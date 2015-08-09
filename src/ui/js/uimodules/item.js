@@ -3,72 +3,120 @@ var Item = (function(){
 	var module = function(name){
 		common.UIMod.call(this,name);
 		this.active = false;
-		this.configMap = {
-			events: ['onBody', 'submitItem', 'uiItemChange', 'modelItemChange', 'delItem', 'uiValid', 'uiEditMode'], //, 'modelItemImagesChange'
-			main_html : '<form class="form-horizontal"> ' +
-				  '<div class="form-group"> ' +
-				    '<label for="inputName" class="col-sm-2 control-label">name</label> ' +
-				    '<div class="col-sm-10"> ' +
-				      '<input type="text" class="form-control" id="inputName" placeholder="part name"> ' +
-				    '</div> ' +
-				  '</div> ' +
-				  '<div class="form-group"> ' +
-				    '<label class="col-sm-2 control-label" for="inputAmount">&euro;</label> ' +
-				    '<div class="col-sm-4"> ' +
-				    	'<input type="text" class="form-control" id="inputAmount" placeholder="amount"> ' +
-				    '</div> ' +
-				    '<div class="col-sm-offset-6"></div> ' +
-				  '</div> ' +
-				'<div class="form-group"> ' +
-	    			'<label for="inputNotes" class="col-sm-2 control-label">notes</label> ' +
-	    			'<div class="col-sm-10"> ' +
-			      		'<textarea class="form-control" id="inputNotes" placeholder="...part notes..." rows="4"></textarea> ' +
-			    	'</div> ' +
-		  		'</div> ' +
-				'<div class="form-group"> ' +
-					'<div class="image-window" id="images"> ' +
-						//'<img src="deprecated/img/1.jpg" class="img-responsive img-thumbnail col-sm-4"/> ' +
-					'</div> ' +
-				'</div> ' +
-				'<div class="form-group"> ' +
-					'<div class="col-sm-offset-4 col-sm-4 col-sm-offset-4"> ' +
-		    			'<input type="file" id="file" accept="image/*" class="form-control" multiple="true"/> ' +
-				    '</div> ' +
-				'</div> ' +
-				'<div class="form-group"> ' +
-				    '<div class="col-sm-offset-8 col-sm-2"> ' +
-				      '<button type="submit" class="btn btn-default pull-right" id="remove">Remove</button> ' +
-				    '</div> ' +
-				    '<div class="col-sm-2"> ' +
-				      '<button type="submit" class="btn btn-default pull-right" id="submit">Submit</button> ' +
-				    '</div> ' +
-				'</div> ' +
-				'</form>',
-				requires: ['api'],
-				api : null
-		}; 
-		this.stateMap = {
-			anchor_map : {},
-			jqueryMap : {},
-			item: {
-				_id: null,
-				images:[],
-				name: '',
-				notes: '',
-				price: ''
-			}	
-		}; 
-		
+		this.configMap.events = ['onBody', 'item.save', 'item.delete'];
+		/*this.configMap.main_html = '<div class="col-sm-12 col-md-6" id="col"></div>' +
+						'<div class="col-sm-12 col-md-6" id="col"></div>'; */
+		this.configMap.requires = ['api', 'widgets', 'itemui', 'utils', 'pubsub'];
 	};
 
 	module.prototype = Object.create(common.UIMod.prototype);
 	module.prototype.constructor = module;
+
+	module.prototype.initModule = function($container){
+		this.configMap.modules['pubsub'].subscribe(this.configMap.events, this);
+		this.configMap.uicontainer = $container;
+		this.configMap.uicontainer.html(this.configMap.main_html);
+		this.setJqueryMap();
+		this.setEvents();
+	};
 	
+	module.prototype.setJqueryMap = function(){
+		this.stateMap.jqueryMap = {
+			$container : this.configMap.uicontainer
+			//, $col : this.configMap.uicontainer.children('#col')
+		};
+	};
+
+	module.prototype.onEvent = function(event, data){
+
+		if(event == "onBody" && null != data.body && "item" == data.body ) {
+			//reset UI
+			this.configMap.uicontainer.empty();
+			this.setActive(true);
+
+			if(null != data.config && null != data.config.id){
+				var id = data.config.id;
+				var mode = null;
+				if(null == data.config.mode)
+					mode = 'view';
+				else
+					mode = data.config.mode;
+
+				var callback = (function(uimodule, uielement, uimode){
+					var ok= function(o){
+						uimodule.loadItem(o, uielement, uimode);
+					};
+					var nok= function(o){
+						alert('not ok');
+						console.log(o);
+					};
+					return {
+						ok: ok,
+						nok: nok
+					};
+				}(this.configMap.modules['itemui'], this.stateMap.jqueryMap.$container, mode));
+
+				this.configMap.modules['api'].getItem(data.config.id, callback);
+			}
+			else {
+				var mode = 'edit';
+				var newItem = {
+					_id: null,
+					images:[],
+					name: null,
+					notes: null,
+					price: null
+				};
+				this.configMap.modules['itemui'].loadItem(newItem,this.stateMap.jqueryMap.$container, mode);
+			}
+		}
+		else if(event == 'item.save' && data.hasOwnProperty('item'))  {
+			//this.setActive(false);
+			this.configMap.modules['utils'].logger.log(this.name, 'going to save item');
+			var callback = {
+					ok: function(o){
+						window.location = window.location.origin + '/#body=item:id,'  + o ;
+						console.log('ok');
+					},
+					nok: function(o){
+						alert('not ok');
+					}
+				};
+			this.configMap.modules['api'].setItem(data['item'],callback);
+		}
+		else if(event == 'item.delete' && data.hasOwnProperty('item'))  {
+			//this.setActive(false);
+			this.configMap.modules['utils'].logger.log(this.name, 'going to delete item');
+			var callback = {
+					ok: function(o){
+						window.location = window.location.origin + '/#body=browse';
+						console.log('ok');
+					},
+					nok: function(o){
+						alert('not ok');
+						console.log(o);
+					}
+				};
+			this.configMap.modules['api'].delItem(data['item']._id,callback);
+		}
+
+	};
+
+
+	return { module: module };
+
+}());
+
+
+/*
+
+
 	module.prototype.setJqueryMap = function($container){
 		if(null != $container){
 			this.stateMap.jqueryMap = {
 				$container : $container,
-				$images : $container.find('#images'),
+				$col : $container.children('#col')
+				,
 				$price : $container.find('#inputAmount'),
 				$file : $container.find('#file'),
 				$name : $container.find('#inputName'),
@@ -80,6 +128,37 @@ var Item = (function(){
 		else {
 			this.stateMap.jqueryMap = {};
 		}
+	};
+
+
+
+
+
+
+	module.prototype.setEvents = function(){
+
+		var widgets = [
+			this.stateMap.jqueryMap.$price,
+			this.stateMap.jqueryMap.$name,
+			this.stateMap.jqueryMap.$notes,
+			this.stateMap.jqueryMap.$file
+		];
+
+		for(var i = 0 ; i < widgets.length ; i++){
+			widgets[i].on('change',function(){
+				pubsub.publish('uiItemChange', this);
+			});
+
+		}
+
+		this.stateMap.jqueryMap.$submit.on('click',function(){
+			pubsub.publish('submitItem', this);
+		});
+
+		this.stateMap.jqueryMap.$remove.on('click',function(){
+			pubsub.publish('delItem', this);
+		});
+
 	};
 
 	module.prototype.readFileAsBase64 = function(file, callback){
@@ -161,11 +240,10 @@ var Item = (function(){
 	module.prototype.model2ui = function(model){
 
 		this.stateMap.item = model;
-
-		this.stateMap.jqueryMap.$price[0].value = model.price;
-		this.stateMap.jqueryMap.$name[0].value = model.name;
-		this.stateMap.jqueryMap.$notes[0].value = model.notes;
-		this.renderImages();
+		$(this.stateMap.jqueryMap.$col[1]).empty();
+		$(this.stateMap.jqueryMap.$col[0]).empty();
+		this.configMap.modules['widgets'].createItemImageWidget(this.stateMap.item, this.stateMap.jqueryMap.$col[0]);
+		//this.renderImages();
 
 	};
 
@@ -230,79 +308,25 @@ var Item = (function(){
 	};
 
 
-	module.prototype.setEvents = function(){
-
-		var widgets = [
-			this.stateMap.jqueryMap.$price,
-			this.stateMap.jqueryMap.$name,
-			this.stateMap.jqueryMap.$notes,
-			this.stateMap.jqueryMap.$file
-		];
-
-		for(var i = 0 ; i < widgets.length ; i++){
-			widgets[i].on('change',function(){
-				pubsub.publish('uiItemChange', this);
-			});
-
-		}
-
-		this.stateMap.jqueryMap.$submit.on('click',function(){
-			pubsub.publish('submitItem', this);
-		});
-
-		this.stateMap.jqueryMap.$remove.on('click',function(){
-			pubsub.publish('delItem', this);
-		});
-
-	};
-
+	
 
 	module.prototype.onEvent = function(event, data){
 
-		if(event == 'submitItem'){
-			var valid = this.modelValidation();
-			console.log('form is valid?' + valid);
-			if(valid){
-				var callback = {
-					ok: function(o){
-						window.location.hash = '#body=browse';
-					},
-					nok: function(o){
-						alert('not ok');
-					}
-				};
-				this.configMap.api.setItem(this.stateMap.item,callback);
-			}
-		}
-		else if (event == 'delItem') {
-			var callback = {
-				ok: function(o){
-					window.location.hash = '#body=browse';
-				},
-				nok: function(o){
-					alert('not ok');
-				}
-			};
-			this.configMap.api.delItem(this.stateMap.item._id,callback);
-		}
-		else if (event == 'uiItemChange') {
-			this.uiValidation(data);
-			this.ui2model(data);
-		}
-		else if (event == 'modelItemChange') {
-			this.model2ui(data);
-		}
-		else if(event == "onBody" && null != data.body && data.body == "item"){
+		if(event == "onBody") { 
+			
+			if( null != this.stateMap.jqueryMap.$col ) 
+					$( this.stateMap.jqueryMap.$col ).empty();
 
-			if(!this.isActive()){
-				this.setActive(true);
-				this.configMap.container.html(this.configMap.main_html);
-				this.setJqueryMap(this.configMap.container);
-				this.setEvents();
+			if ( null != data.body && "item" != data.body ) {
+				this.setActive(false);
+				return;
 			}
 
-			if(data.config && data.config.id){
-				pubsub.publish('uiEditMode', true);
+			this.setActive(true);
+
+			if(null != data.config && null != data.config.id){
+
+				//pubsub.publish('uiEditMode', true);
 				var callback = (function(module){
 					var mod = module;
 
@@ -317,11 +341,12 @@ var Item = (function(){
 						nok: nok
 					};
 				}(this));
-				this.configMap.api.getItem(data.config.id, callback);
+
+				this.configMap.modules['api'].getItem(data.config.id, callback);
 			}
 			else {
-				pubsub.publish('uiValid', false);
-				pubsub.publish('uiEditMode', false);
+				//pubsub.publish('uiValid', false);
+				//pubsub.publish('uiEditMode', false);
 				var newItem = {
 					_id: null,
 					images:[],
@@ -331,6 +356,40 @@ var Item = (function(){
 				};
 				this.model2ui(newItem);
 			}
+		}
+		
+		else if(event == 'submitItem'){
+			var valid = this.modelValidation();
+			console.log('form is valid?' + valid);
+			if(valid){
+				var callback = {
+					ok: function(o){
+						window.location.hash = '#body=browse';
+					},
+					nok: function(o){
+						alert('not ok');
+					}
+				};
+				this.configMap.modules['api'].setItem(this.stateMap.item,callback);
+			}
+		}
+		else if (event == 'delItem') {
+			var callback = {
+				ok: function(o){
+					window.location.hash = '#body=browse';
+				},
+				nok: function(o){
+					alert('not ok');
+				}
+			};
+			this.configMap.modules['api'].delItem(this.stateMap.item._id,callback);
+		}
+		else if (event == 'uiItemChange') {
+			this.uiValidation(data);
+			this.ui2model(data);
+		}
+		else if (event == 'modelItemChange') {
+			this.model2ui(data);
 		}
 		else if (event == 'uiValid') {
 			if(data)
@@ -351,18 +410,9 @@ var Item = (function(){
 					this.setActive(false);
 				}
 		}
+		
 	};	
 
-	module.prototype.initModule = function($container){
-		if(null != this.configMap.events)
-			pubsub.subscribe(this.configMap.events, this);
-		
-		this.configMap.container = $container;
-		$container.html(this.configMap.main_html);
-		this.setJqueryMap($container);
-		this.setEvents();
-	};
 
-	return { module: module };
 
-}());
+*/

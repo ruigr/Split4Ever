@@ -2,37 +2,32 @@ var Header = (function(){
 
 	var module = function(name){
 		common.UIMod.call(this,name);
-		this.configMap = {
-			events: ['onBody'],
-			requires: [],
-			api : null,
-			main_html : '<div class="row">' +
+		this.configMap.events = ['onBody'];
+		this.configMap.main_html = '<div class="row">' +
 					'<div class="col-sm-8" id="headerdiv1">' + 
 					'</div>' +
 					'<div class="col-sm-3" id="headerdiv2">' +
 					'</div>' +
 					'<div class="col-sm-1" id="headerdiv3">' +
 					'</div>' +
-				'</div>' 
-		};
-		this.stateMap = {
-			anchor_map : {},
-			jqueryMap : {}	, 
-			gui: null
-		}; 
+				'</div>' ;
+		this.configMap.requires = ['utils', 'pubsub'];
+		this.stateMap.anchor_map = {};
+		this.stateMap.jqueryMap = {}; 
+		this.stateMap.gui = null;
 		
 	};
 
 	module.prototype = Object.create(common.UIMod.prototype);
 	module.prototype.constructor = module;
 	
-	module.prototype.setJqueryMap = function($container){
+	module.prototype.setJqueryMap = function(){
 
 		this.stateMap.jqueryMap = {
-			$container : $container,
-			$hd1 : $container.find('#headerdiv1'),
-			$hd2: $container.find('#headerdiv2'),
-			$hd3: $container.find('#headerdiv3')
+			$container : this.configMap.uicontainer,
+			$hd1 : this.configMap.uicontainer.find('#headerdiv1'),
+			$hd2: this.configMap.uicontainer.find('#headerdiv2'),
+			$hd3: this.configMap.uicontainer.find('#headerdiv3')
 		};
 
 	};

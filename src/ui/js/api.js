@@ -1,5 +1,13 @@
 var Api = (function(){
-
+	/*	
+		item: {
+			_id: null,
+			images:[],
+			name: '',
+			notes: '',
+			price: ''
+		}
+	*/
 	var module = function(name){
 		common.Mod.call(this,name);
 	};
@@ -7,20 +15,14 @@ var Api = (function(){
 	module.prototype = Object.create(common.Mod.prototype);
 	module.prototype.constructor = module;
 	
-	/*	item: {
-				_id: null,
-				images:[],
-				name: '',
-				notes: '',
-				price: ''
-			}*/
-
 	module.prototype.setItem = function(item, callback){
+
 		console.log('@Api.setItem');
 		console.log('item: ' + JSON.stringify(item));
 		var url = window.location.origin + '/api/item'; 
 		$.post(url, item).done(callback.ok).fail(callback.nok);
 		console.log('Api.setItem@');
+
 	};
 
 	module.prototype.getItems = function(item, callback){

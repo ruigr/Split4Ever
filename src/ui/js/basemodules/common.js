@@ -9,43 +9,39 @@ var common = (function() {
 			//requires: ['api'];
 			requires: [],
 			events: ['onAnchor'],
-			api : null
+			modules: {}
 		}; 
 		this.stateMap = {
 			anchor_map : {}	
-
 		}; 
 	};
 
 	Mod.prototype.getName = function(){
 		return this.name;
 	};
-	
 	Mod.prototype.isActive = function(){
 		return this.active;
 	};
-
 	Mod.prototype.setActive = function(value){
 		this.active = value;
 	};
-
 	Mod.prototype.onEvent = function(event, data){
 		console.log("Mod.prototype.onEvent not implemented");
 	};
-
 	Mod.prototype.setEvents = function(){
 		console.log("Mod.prototype.setEvents not implemented");
 	};
-
 	Mod.prototype.initModule = function($container){
-		if(null != this.configMap.events)
-			pubsub.subscribe(this.configMap.events, this);
-	};
+		
+		if(null != this.configMap.events){
+			if(this.configMap.modules.hasOwnProperty('pubsub')){
+				var pubsub = this.configMap.modules['pubsub'];
+				pubsub.subscribe(this.configMap.events, this);
+			}
+		} 
+		
 
-	Mod.prototype.setApi = function(api){
-		this.configMap.api = api;
 	};
-	
 	Mod.prototype.requires = function(dependency){
 		var result = false;
 		if(Array.isArray(this.configMap.requires)){
@@ -62,29 +58,43 @@ var common = (function() {
 
 	var UIMod = function(name){
 		Mod.call(this,name);
-		this.configMap = {
-			main_html : "",
-			container : null
-		}; 
-		this.stateMap = {
-			anchor_map : {},
-			jqueryMap : {}	
-		}; 
+		this.configMap.uicontainer = null;
+		this.configMap.main_html = null;
+		this.stateMap.jqueryMap = {} ;
+		/*
+			item: {
+				_id: null,
+				images:[],
+				name: '',
+				notes: '',
+				price: ''
+			}
+		*/
 	};
 
 	UIMod.prototype = Object.create(Mod.prototype);
+	UIMod.prototype.constructor = UIMod;
 
-	UIMod.prototype.setJqueryMap = function($container){
+	UIMod.prototype.setJqueryMap = function(){
+		console.log("UIMod.prototype.setJqueryMap not implemented");
+	};
+
+	UIMod.prototype.setJqueryMap = function(){
 		console.log("UIMod.prototype.setJqueryMap not implemented");
 	};
 
 	UIMod.prototype.initModule = function($container){
-		if(null != this.configMap.events)
-			pubsub.subscribe(this.configMap.events, this);
 		
-		this.configMap.container = $container;
-		$container.html(this.configMap.main_html);
-		this.setJqueryMap($container);
+		if(null != this.configMap.events){
+			if(this.configMap.modules.hasOwnProperty('pubsub')){
+				var pubsub = this.configMap.modules['pubsub'];
+				pubsub.subscribe(this.configMap.events, this);
+			}
+		}
+
+		this.configMap.uicontainer = $container;
+		this.configMap.uicontainer.html(this.configMap.main_html);
+		this.setJqueryMap();
 		this.setEvents();
 	};
 
