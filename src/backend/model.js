@@ -11,6 +11,8 @@ var DB_CONNECT_STRING = 'mongodb://app:password@localhost:27017/vwparts';
 if(process.env.DB_CONN_STR)
 	DB_CONNECT_STRING = process.env.DB_CONN_STR;
 
+console.log('going to connect to db in: ' + DB_CONNECT_STRING);
+
 if(custom.areWeOnBluemix() && custom.doWeHaveServices()){
 	DB_CONNECT_STRING = custom.getMongoConnectString();
 	custom.log('waiting for bluemix network to pop up...');

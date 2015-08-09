@@ -4,7 +4,7 @@ CONTAINER_NAME=vwparts
 PORT=3000
 REGISTRY=registry-ice.ng.bluemix.net
 ORG=techdays
-DB_CONNECTION_STR="mongodb:\/\/app:password@172.28.245.101:27017\/vwparts"
+DB_CONNECTION_STR="mongodb:\/\/app:password@192.168.1.3:27017\/vwparts"
 
 sed -i -- "s/EXPOSE.*/EXPOSE\ $PORT/g" Dockerfile
 sed -i -- "s/DOCKER.*/DOCKER\ true/g" Dockerfile
@@ -13,10 +13,12 @@ sed -i -- "s/PORT.*/PORT\ $PORT/g" Dockerfile
 sed -i -- "s/DB_CONN_STR.*/DB_CONN_STR\ $DB_CONNECTION_STR/g" Dockerfile
 
 
-#ice --local stop $CONTAINER_NAME
-#sleep 8
-#ice --local rm $CONTAINER_NAME
-#sleep 8
+ice --local stop $CONTAINER_NAME
+sleep 8
+ice --local rm $CONTAINER_NAME
+sleep 8
+
+ice --local rmi -f=true $CONTAINER_NAME
 
 #ice --local pull $REGISTRY/ibmnode
 

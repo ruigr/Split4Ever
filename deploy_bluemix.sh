@@ -5,10 +5,10 @@ CONTAINER_NAME=vwparts
 PORT=8080
 REGISTRY=registry-ice.ng.bluemix.net
 ORG=techdays
-#MONGO_SERVICE=mongolab
-MONGO_SERVICE=mongodb
-#MONGO_PLAN=sandbox
-MONGO_PLAN=100
+MONGO_SERVICE=mongolab
+#MONGO_SERVICE=mongodb
+MONGO_PLAN=sandbox
+#MONGO_PLAN=100
 MONGO_INSTANCE=mongo
 BRIDGE_APP="$CONTAINER_NAME"bridge
 
