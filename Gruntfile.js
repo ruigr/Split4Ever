@@ -1,23 +1,27 @@
 module.exports = function(grunt) {
-
 	// Project configuration.
 	grunt.initConfig({
-    		pkg: grunt.file.readJSON('package.json'),
-		concat:{
+        
+        clean: {
+            js:'dist/ui'
+        },
+
+        jshint: ['Gruntfile.js'],	
+        pkg: grunt.file.readJSON('package.json'),
+
+        concat:{
 			dist: {
         			src: [ 
             				'src/ui/js/libs/*.js' 
                             ,'src/ui/js/basemodules/*.js'
                             ,'src/ui/js/uimodules/*.js'
-            				,'src/ui/js/*.js' 
-                            
+            				,'src/ui/js/*.js'
         			],
         			dest: 'dist/ui/js/vwp.js'
     			},
-			
 			css: {
         			src: [
-            				'src/ui/css/*.css' 
+            				'src/ui/css/base.css' 
         			],
         			dest: 'dist/ui/css/vwp.css'
     			}
@@ -34,36 +38,31 @@ module.exports = function(grunt) {
               // includes files within path
               {flatten: true, expand: true, src: ['src/ui/index.html'], dest: 'dist/ui/'},
               {flatten: true, expand: true, src: ['src/backend/**/*.js'], dest: 'dist/backend/'},
-              {flatten: true, expand: true, src: ['src/ui/img/*'], dest: 'dist/ui/img'}
+              {flatten: true, expand: true, src: ['src/ui/img/*'], dest: 'dist/ui/img/'}
             ],
           }
         },
 		watch: {
-    			scripts: {
-        			files: ['src/ui/**/*.js', 'src/ui/**/*.css', ],
-        			tasks: ['concat'],
+    			uijsandcss: {
+        			files: ['src/ui/js/**/*.js', 'src/ui/css/*.css', 
+                        'src/backend/**/*.js', 'src/ui/index.html', 'src/ui/img/*' ],
+        			tasks: ['clean', 'concat', 'copy'],
         			options: {
             				spawn: false
         			}
-    			} ,
-                scripts: {
-                    files: ['src/backend/**/*.js', 'src/ui/index.html'],
-                    tasks: ['copy'],
-                    options: {
-                            spawn: false
-                    }
-                } 
+    			}  
 		}
 
 	});
-
 	// Load the plugin that provides the "uglify" task.
+    grunt.loadNpmTasks('grunt-contrib-clean');
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-copy');
-
+    grunt.loadNpmTasks('grunt-contrib-jshint');
 	// Default task(s).
-	grunt.registerTask('default', ['concat', 'copy', 'watch']);
+	grunt.registerTask('default', ['concat', 'copy', 'watch', 
+        'jshint', 'clean']);
 
 };
