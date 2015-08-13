@@ -75,8 +75,10 @@ var Item = (function(){
 			this.configMap.modules['utils'].logger.log(this.name, 'going to save item');
 			var callback = {
 					ok: function(o){
-						window.location = window.location.origin + '/#body=item:id,'  + o ;
-						console.log('ok');
+
+						window.location = window.location.origin + '/#body=item:id,'  + o.result ;
+						console.log('ok - saved item with id: ' + o.result);
+						//alert('ok');
 					},
 					nok: function(o){
 						alert('not ok');
@@ -90,7 +92,7 @@ var Item = (function(){
 			var callback = {
 					ok: function(o){
 						window.location = window.location.origin + '/#body=browse';
-						console.log('ok');
+						console.log('ok - deleted item with id: ' + o.result);
 					},
 					nok: function(o){
 						alert('not ok');
