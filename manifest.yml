@@ -1,0 +1,6 @@
+applications:
+- name: vwparts
+  memory: 512M
+  instances: 1
+  command: node dist/backend/index.js
+  path: "."
