@@ -41,7 +41,7 @@ app.get('/api/items',
 				res.end();
 			},
 			nok: function(o){
-				console.log('nok - error: ' + util.inspect(o));	
+				console.error(err);
 				res.status(400);
 				res.end();
 			}
@@ -54,23 +54,24 @@ app.get('/api/items',
 app.get('/api/item/:id', 
 	function(req,res){
 		console.log('@get/api/item');
+		console.log('req param id is:' + util.inspect(req.params.id));
 		var id = req.params.id;
 		custom.log('id: ' + id);
 		var callback = {
 			ok:function(o){
 				console.log('ok - got item with id: ' + id);
-				console.log('ok: ' + util.inspect(o));
+				//console.log('ok: ' + util.inspect(o));
 				//res.writeHead(200, {'Content-Type': 'text/plain'});
 				res.status(200).send(o);
 				res.end();
 			},
 			nok: function(o){
-				console.log('nok - error: ' + util.inspect(o));	
+				console.error(err);
 				res.status(400);
 				res.end();
 			}
 		};
-		console.log(req.body);
+		//console.log(req.body);
 		model.get(id, callback);
 	}
 );
@@ -83,18 +84,18 @@ app.post('/api/item',
 
 		var callback = {
 			ok:function(id){
-				console.log('ok - posted item with id: ' + id);
-				//res.writeHead(200, {'Content-Type': 'text/plain'});
-				res.status(200).send(id);
+				console.log('post/api/item ok: ' + id);
+
+				res.status(200).send({result: id});
 				res.end();
 			},
 			nok: function(err){
-				console.log('nok - error: ' + util.inspect(err));	
+				console.error(err);	
 				res.status(400);
 				res.end();
 			}
 		};
-		console.log(req.body);
+		//console.log(req.body);
 		model.post(req.body, callback)
 		
 	}
@@ -114,11 +115,11 @@ app.delete('/api/item/:id',
 		var callback = {
 			ok:function(o){
 				console.log('ok - deleted item with id: ' + id);
-				res.writeHead(200, {'Content-Type': 'text/plain'});
+				res.status(200).send({result: id});
 				res.end();
 			},
-			nok: function(o){
-				console.log('nok - error: ' + util.inspect(o));	
+			nok: function(err){
+				console.error(err);	
 				res.status(400);
 				res.end();
 			}

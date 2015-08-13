@@ -11,15 +11,16 @@ var DB_CONNECT_STRING = 'mongodb://app:password@localhost:27017/vwparts';
 if(process.env.DB_CONN_STR)
 	DB_CONNECT_STRING = process.env.DB_CONN_STR;
 
-console.log('going to connect to db in: ' + DB_CONNECT_STRING);
-
 if(custom.areWeOnBluemix() && custom.doWeHaveServices()){
 	DB_CONNECT_STRING = custom.getMongoConnectString();
-	custom.log('waiting for bluemix network to pop up...');
-	custom.sleep(120000);
-	custom.log('...resuming now');
+	if(custom.areWeOnDocker()){
+		custom.log('waiting for bluemix network to pop up...');
+		custom.sleep(120000);
+		custom.log('...resuming now');	
+	}
 }
 
+console.log('going to connect to db in: ' + DB_CONNECT_STRING);
 
 var Model = (function(){
 
@@ -36,11 +37,21 @@ var Model = (function(){
 
 		var setConnection = function(o){
 			connection = o;
+			init();
 			//console.log('new db connection: ' + util.inspect(connection));
 		};
 
 		var get = function() {
 			return connection;
+		};
+
+		var init = function(){
+			console.log('going to init collections');
+			if(null == connection.collection('items'))
+				connection.createCollection('items');
+
+			console.log('we have items collection');
+
 		};
 
 		return {
@@ -56,39 +67,41 @@ var Model = (function(){
 
 	var post = function(o, callback) {
 		custom.log('@Model.post');
-		if(! o._id ) {
-			o._id = new ObjectID();
-			dbcnx.get().collection('items').insertOne(o,
-				function(err,result){
-					if (err) {
-		  				console.error(err);
-		  				callback.nok(err);
-		  			}
-		  			else {
-		  				console.log('item save successful with id: ' + result.insertedId );
-		  				// + util.inspect(result));
-		  				callback.ok(result.insertedId);
-		  			}
-				}
-			);
-		}
-		else {
-			o._id = new ObjectID(o._id);
-			dbcnx.get().collection('items').replaceOne(
-				{'_id' : o._id},
-				o,
-				function(err,result){
-					if (err) {
-		  				console.error(err);
-		  				callback.nok(null);
-		  			}
-		  			else {
-		  				console.log('item save successful');
-		  				callback.ok(result);
-		  			}
-				}
-			);
+		var id = null;
 
+		var cbObj = function(cb, objId){
+			var _callback = cb;
+			var _id = objId;
+
+			var f = function(err,result){
+				if (err) {
+				  		console.error(err);
+				  		_callback.nok(err);
+				  	}
+				  	else {
+				  		console.log('pots successful with id: ' + _id.toString() );
+				  		_callback.ok(_id.toString());
+				  	}
+			};
+
+			return {
+				f:f
+			};
+
+		};
+
+		if(! o._id ) {
+			id = new ObjectID();
+			o._id = id;
+			var c = cbObj(callback, id);
+			dbcnx.get().collection('items').insertOne(o, c.f );
+		}
+		else {			
+			id = new ObjectID(o._id);
+			o._id = id;
+			var c = cbObj(callback, id);
+			dbcnx.get().collection('items').replaceOne(
+				{'_id' : o._id}, o, c.f );
 		}
 
 		
@@ -146,6 +159,7 @@ var Model = (function(){
 	  				callback.nok(null);
 	  			}
 	  			else {
+	  				console.log('result:' + util.inspect(result));
 	  				console.log('item del successful');
 	  				callback.ok(result);
 	  			}
