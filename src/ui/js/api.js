@@ -20,7 +20,21 @@ var Api = (function(){
 		console.log('@Api.setItem');
 		console.log('item: ' + JSON.stringify(item));
 		var url = window.location.origin + '/api/item'; 
-		$.post(url, item).done(callback.ok).fail(callback.nok);
+
+		$.ajax({
+			async:true,
+		    url: url,
+		    data: item,
+		    type: 'POST',
+		    success: callback.ok,
+		    dataType: 'json',
+		    error: callback.nok
+		});
+
+
+/*		var posting = $.post(url, item);
+		posting.done(callback.ok);
+		posting.fail(callback.nok);*/
 		console.log('Api.setItem@');
 
 	};
@@ -44,9 +58,11 @@ var Api = (function(){
 
 		var url = window.location.origin + '/api/item/' + id;
 		$.ajax({
+			async:true,
 		    url: url,
 		    type: 'DELETE',
 		    success: callback.ok,
+		    dataType: 'json',
 		    error: callback.nok
 		}); 
 		console.log('Api.eraseItem@');

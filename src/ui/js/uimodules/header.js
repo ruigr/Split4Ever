@@ -4,7 +4,11 @@ var Header = (function(){
 		common.UIMod.call(this,name);
 		this.configMap.events = ['onBody'];
 		this.configMap.main_html = '<div class="row">' +
-					'<div class="col-sm-8" id="headerdiv1">' + 
+					'<div class="col-sm-2" id="headerdiv1">' + 
+					'</div>' +
+					'<div class="col-sm-3" id="headerdiv15">' + 
+					'</div>' +
+					'<div class="col-sm-3" id="headerdiv16">' + 
 					'</div>' +
 					'<div class="col-sm-3" id="headerdiv2">' +
 					'</div>' +
@@ -26,6 +30,8 @@ var Header = (function(){
 		this.stateMap.jqueryMap = {
 			$container : this.configMap.uicontainer,
 			$hd1 : this.configMap.uicontainer.find('#headerdiv1'),
+			$hd15 : this.configMap.uicontainer.find('#headerdiv15'),
+			$hd16 : this.configMap.uicontainer.find('#headerdiv16'),
 			$hd2: this.configMap.uicontainer.find('#headerdiv2'),
 			$hd3: this.configMap.uicontainer.find('#headerdiv3')
 		};
@@ -35,6 +41,7 @@ var Header = (function(){
 	module.prototype.setGuiState = function(state) {
 
 		if(1 > this.stateMap.jqueryMap.$hd1.children().length){
+			//always load image in the beginning
 			var anchorWidget = document.createElement("a");
 			anchorWidget.setAttribute("href",window.location.origin + '/#body=browse' );
 			//'<img src="img/header.png" class="img-rounded"/>' + 
@@ -43,6 +50,25 @@ var Header = (function(){
 			imgWidget.classList.add("img-rounded");
 			anchorWidget.appendChild(imgWidget);
 			this.stateMap.jqueryMap.$hd1.append(anchorWidget);
+
+			var phoneWidget = document.createElement("h2");
+			phoneWidget.innerText = '+351 91 91 594 54';
+			var titleWidget = document.createElement("h4");
+			titleWidget.innerText = 'Pecas classicas VW';
+			var subTitleWidget1 = document.createElement("div");
+			subTitleWidget1.innerText ='Compra e venda de material para vw antigo';
+			var subTitleWidget2 = document.createElement("div");
+			subTitleWidget2.innerText ='Material novo(new old stock), usado e recondicionado';
+			var lineBreak = document.createElement("br");
+
+			this.stateMap.jqueryMap.$hd15.append(phoneWidget);
+			this.stateMap.jqueryMap.$hd15.append(titleWidget);
+
+			this.stateMap.jqueryMap.$hd16.append(subTitleWidget1);
+			this.stateMap.jqueryMap.$hd16.append(lineBreak);
+			this.stateMap.jqueryMap.$hd16.append(subTitleWidget2);
+
+
 		}
 
 		if(state == this.stateMap.gui){

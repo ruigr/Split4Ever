@@ -86,7 +86,7 @@ app.post('/api/item',
 			ok:function(id){
 				console.log('post/api/item ok: ' + id);
 
-				res.status(200).send({result: id});
+				res.status(200).send({'result': id});
 				res.end();
 			},
 			nok: function(err){
@@ -115,7 +115,7 @@ app.delete('/api/item/:id',
 		var callback = {
 			ok:function(o){
 				console.log('ok - deleted item with id: ' + id);
-				res.status(200).send({result: id});
+				res.status(200).send({'result': id});
 				res.end();
 			},
 			nok: function(err){
