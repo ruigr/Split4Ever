@@ -1,6 +1,13 @@
+---
 applications:
 - name: vwparts
+  buildpack: sdk-for-nodejs
   memory: 512M
   instances: 1
   command: node dist/backend/index.js
+  services:
+    - mongo
   path: "."
+  disk_quota: 1024M
+  env:
+    CONTEXT: bluemix
