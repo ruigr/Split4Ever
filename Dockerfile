@@ -8,12 +8,12 @@ ENV PORT 3000
 ENV DB_CONN_STR mongodb://app:password@192.168.1.3:27017/vwparts
 
 WORKDIR /
-RUN mkdir -p /app
-ADD dist /app
-ADD package.json /app/
+RUN mkdir -p /dist
+ADD dist /dist
+ADD package.json /dist/
 
 
-WORKDIR /app
+# WORKDIR /dist
 RUN npm install -d --production 
 EXPOSE 3000
-CMD ["node", "backend/index.js"]
+CMD ["node", "dist/backend/index.js"]

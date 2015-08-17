@@ -3,7 +3,7 @@ module.exports = function(grunt) {
 	grunt.initConfig({
         
         clean: {
-            js:'dist/ui'
+            js:'dist/**/*'
         },
 
         jshint: ['Gruntfile.js'],	
