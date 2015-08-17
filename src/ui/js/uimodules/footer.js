@@ -2,28 +2,28 @@ var Footer = (function(){
 
 	var module = function(name){
 		common.UIMod.call(this,name);
-		this.configMap.main_html = '<hr class="bottom-hr"/>' + 
-			'<p class="pull-right"><small><em>vwparts&copy;2015</em></small></p>';
-
 	};
 
 	module.prototype = Object.create(common.UIMod.prototype);
 	module.prototype.constructor = module;
 
 	module.prototype.setJqueryMap = function(){
-
 		this.stateMap.jqueryMap = {
-			$container : this.configMap.uicontainer,
-			$msg : this.configMap.uicontainer.find('.msg')
+			$container : this.configMap.uicontainer
 		};
+	};
 
+	module.prototype.initUi = function(){
+
+		var p1 = document.createElement("p1");
+		$( this.configMap.uicontainer ).append(p1);
+		p1.classList.add("text-muted");
+		p1.classList.add("pull-right");
+		p1.classList.add("small");
+		p1.innerHTML = "Pecas classicas <em>VW</em>. Compra e venda de material novo(new old stock), usado e recondicionado &copy; 2015 vwparts";
 
 	};
-	module.prototype.setEvents = function(){
-		this.stateMap.jqueryMap.$msg.click(function(){
-			alert("msg")
-		});
-	};
-		return { module: module };
+
+	return { module: module };
 
 }());

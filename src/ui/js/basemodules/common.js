@@ -79,8 +79,8 @@ var common = (function() {
 		console.log("UIMod.prototype.setJqueryMap not implemented");
 	};
 
-	UIMod.prototype.setJqueryMap = function(){
-		console.log("UIMod.prototype.setJqueryMap not implemented");
+	UIMod.prototype.initUi = function(){
+		console.log("UIMod.prototype.initUi not implemented");
 	};
 
 	UIMod.prototype.initModule = function($container){
@@ -93,7 +93,9 @@ var common = (function() {
 		}
 
 		this.configMap.uicontainer = $container;
-		this.configMap.uicontainer.html(this.configMap.main_html);
+		if(this.configMap.main_html)
+			this.configMap.uicontainer.html(this.configMap.main_html);
+		this.initUi();
 		this.setJqueryMap();
 		this.setEvents();
 	};

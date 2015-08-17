@@ -10,10 +10,6 @@ var UiShell = (function() {
 			'header','footer','item','api',
 			'browse','itemui','browseui' ];
 		this.configMap.anchor_schema_map = {};
-		this.configMap.main_html = String() + 
-		'<div class="header container-fluid"></div>' + 
-		'<div class="body container-fluid"></div>' + 
-		'<div class="footer container-fluid"></div>';
 		this.stateMap.anchor_map = {};
 
 	};
@@ -24,18 +20,48 @@ var UiShell = (function() {
 	module.prototype.initModule = function($container){
 		//this.configMap.modules['pubsub'].subscribe(this.configMap.events, this);
 		this.configMap.uicontainer = $container;
-		$container.html(this.configMap.main_html);
+		this.initUI();
 		this.setJqueryMap();
 		this.loadModules();
 		this.setEvents();
 	};
 	
+	module.prototype.initUI = function(){
+
+		var nav = document.createElement("nav");
+		$( this.configMap.uicontainer ).append(nav);
+		nav.classList.add("navbar");
+		nav.classList.add("navbar-default");
+		nav.classList.add("navbar-fixed-top");
+		nav.classList.add("navbar-default-o");
+
+		var headerDiv = document.createElement("div");
+		nav.appendChild(headerDiv);
+		headerDiv.classList.add("container");
+		headerDiv.setAttribute('id', 'header');
+
+		var bodyDiv = document.createElement("div");
+		$( this.configMap.uicontainer ).append(bodyDiv);
+		bodyDiv.classList.add("container");
+		bodyDiv.setAttribute('id', 'body');
+
+		var footer = document.createElement("footer");
+		$( this.configMap.uicontainer ).append(footer);
+		footer.classList.add("footer");
+
+		var footerDiv = document.createElement("div");
+		footer.appendChild(footerDiv);
+		footerDiv.classList.add("container");
+		footerDiv.setAttribute('id', 'footer');
+
+	};
+
 	module.prototype.setJqueryMap = function(){
 		this.stateMap.jqueryMap = {
 			$container : this.configMap.uicontainer,
-			$header : $( this.configMap.uicontainer ).find('.header'),
-			$body : $( this.configMap.uicontainer ).find('.body'),
-			$footer : $( this.configMap.uicontainer ).find('.footer')
+			$header : $( this.configMap.uicontainer ).find('#header'),
+			$body : $( this.configMap.uicontainer ).find('#body'),
+			$footer : $( this.configMap.uicontainer ).find('#footer')
 		};
 	};
 

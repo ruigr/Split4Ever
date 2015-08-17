@@ -21,7 +21,8 @@ module.exports = function(grunt) {
     			},
 			css: {
         			src: [
-            				'src/ui/css/base.css' 
+                        'src/ui/css/bootstrap.css',
+            			'src/ui/css/custom.css' 
         			],
         			dest: 'dist/ui/css/vwp.css'
     			}

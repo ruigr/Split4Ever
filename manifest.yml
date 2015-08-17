@@ -2,7 +2,7 @@
 applications:
 - name: vwparts
   buildpack: sdk-for-nodejs
-  memory: 512M
+  memory: 1024M
   instances: 1
   command: node dist/backend/index.js
   services:
