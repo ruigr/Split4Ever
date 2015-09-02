@@ -53,6 +53,28 @@ var Api = (function(){
 		console.log('Api.getItem@');
 	};
 
+	module.prototype.getCategories = function(callback){
+		console.log('@Api.getCategories');
+		//var url = window.location.origin + '/api/item/' + id; 
+		//$.get(url).done(callback.ok).fail(callback.nok);
+		var data = [];
+		
+		callback.ok(data);
+
+		console.log('Api.getCategories@');
+	};
+
+	module.prototype.getSubCategories = function(cat, callback){
+		console.log('@Api.getSubCategories');
+		//var url = window.location.origin + '/api/item/' + id; 
+		//$.get(url).done(callback.ok).fail(callback.nok);
+		var data = [];
+		
+		callback.ok(data);
+		
+		console.log('Api.getSubCategories@');
+	};
+
 	module.prototype.delItem = function(id, callback){
 		console.log('@Api.eraseItem');
 

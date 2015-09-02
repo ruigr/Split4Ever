@@ -4,18 +4,22 @@ var ItemUI = (function(){
 		common.UIMod.call(this,name);
 		this.active = false;
 		this.configMap.events = ['itemuiValid']; 
-		this.configMap.requires = ['utils', 'pubsub'];
+		this.configMap.requires = ['utils', 'pubsub', 'api'];
 		this.configMap.constants = {
 			nameMaxLength: 128,
 			amountMax: 999999,
-			notesMaxLength: 1024
+			notesMaxLength: 1024,
+			newCategoryToken: '*** new category ***',
+			newSubCategoryToken: '*** new sub category ***'
 		};
 		this.stateMap.item = {
 				_id: null,
 				images:[],
 				name: '',
 				notes: '',
-				price: ''
+				price: '',
+				category:'',
+				subCategory: ''
 			}; 
 		
 	};
@@ -39,6 +43,8 @@ var ItemUI = (function(){
 				,$files: $(col2).find('#inputFiles')[0]
 				,$remove: $(col2).find('#remove')[0]
 				,$submit: $(col2).find('#submit')[0]
+				,$category: $(col2).find('#comboCat')[0]
+				,$subCategory: $(col2).find('#comboSubCat')[0]
 
 			};
 	};
@@ -334,6 +340,37 @@ var ItemUI = (function(){
 		$( this.stateMap.jqueryMap.$remove ).on('click', 
 			function(){removeWgtListener.listen(this);}
 		);
+
+
+		//---------------------------------category widget
+
+		var categoryWgtListener = (function(stateMap, configMap){
+			var statemap = stateMap;
+			var configmap = configMap;
+			
+			var listen = function(widget){
+/*				var data = {};
+				data['item']=statemap.item;
+				//we assume submit is only clicked when 
+				//all the data is available to proceed
+				configmap.modules['pubsub'].publish('item.delete', data);*/
+				window.alert('change');
+
+			};
+
+			return {
+				listen: listen
+			};
+
+
+		})(this.stateMap, this.configMap);
+
+		$( this.stateMap.jqueryMap.$category ).on('change', 
+			function(){categoryWgtListener.listen(this);}
+		);
+
+
+
 	};
 
 
@@ -385,7 +422,9 @@ var ItemUI = (function(){
 				this.stateMap.jqueryMap.$notes,
 				this.stateMap.jqueryMap.$files,
 				this.stateMap.jqueryMap.$remove,
-				this.stateMap.jqueryMap.$submit ];
+				this.stateMap.jqueryMap.$submit,
+				this.stateMap.jqueryMap.$subCategory,
+				this.stateMap.jqueryMap.$category ];
 
 		var actionWidgets = [ this.stateMap.jqueryMap.$files,
 				this.stateMap.jqueryMap.$remove,
@@ -431,9 +470,87 @@ var ItemUI = (function(){
 		this.stateMap.jqueryMap.$name.value = this.stateMap.item.name;
 		this.stateMap.jqueryMap.$amount.value = this.stateMap.item.price;
 		this.stateMap.jqueryMap.$notes.value = this.stateMap.item.notes;
-		
+		this.stateMap.jqueryMap.$category.value = this.stateMap.item.category;
+		this.stateMap.jqueryMap.$subCategory.value = this.stateMap.item.subCategory;
 	}
 
+
+	module.prototype.loadCategories = function(domElem){
+
+		var callback = function(module, htmlElem){
+			var mod = module;
+			var elem = htmlElem; 
+
+			var nok = function(err){
+				mod.configMap.modules['pubsub'].publish('itemui.err.loadCat', err);
+			};
+
+			var ok = function(data){
+				
+				if( !Array.isArray(data) ){
+					mod.configMap.modules['pubsub'].publish('itemui.err.loadCat', new Error('data is not an array'));
+					return;
+				}
+
+				for( var i = 0; i < data.length ; i++ ){
+					var cat = data[i];
+					var option = document.createElement("option");
+					option.text = data[i];
+					elem.add(option);
+				}
+
+				var option = document.createElement("option");
+				option.text = mod.configMap.constants.newCategoryToken;
+				elem.add(option);
+
+			};
+
+			return {ok: ok, nok: nok};
+
+		}(this, domElem);
+
+		this.configMap.modules['api'].getCategories(callback);
+
+	};
+
+	module.prototype.loadSubCategories = function(cat, domElem){
+
+		var callback = function(pubsubMod, category, htmlElem){
+			var mod = module;
+			var elem = htmlElem; 
+			var cat = category;
+
+			var nok = function(err){
+				mod.configMap.modules['pubsub'].publish('itemui.err.loadSubCat', err);
+			};
+
+			var ok = function(data){
+				
+				if( !Array.isArray(data) ){
+					mod.configMap.modules['pubsub'].publish('itemui.err.loadSubCat', new Error('data is not an array'));
+					return;
+				}
+
+				for( var i = 0; i < data.length ; i++ ){
+					var cat = data[i];
+					var option = document.createElement("option");
+					option.text = data[i];
+					elem.add(option);
+				}
+
+				var option = document.createElement("option");
+				option.text = mod.configMap.constants.newSubCategoryToken;
+				elem.add(option);
+
+			};
+
+			return {ok: ok, nok: nok};
+
+		}(this, domElem);
+
+		this.configMap.modules['api'].getSubCategories(cat, callback);
+
+	};
 
 	module.prototype.loadItemPropertiesUi = function(container){
 
@@ -490,6 +607,52 @@ var ItemUI = (function(){
 			var additionalDiv = document.createElement("div");
 			amountGroup.appendChild(additionalDiv);
 			additionalDiv.classList.add("col-sm-offset-6");
+
+
+
+
+			var categoriesGroup = document.createElement("div");
+			form.appendChild(categoriesGroup);
+			categoriesGroup.classList.add("form-group");
+
+			var catLabel = document.createElement("label");
+			categoriesGroup.appendChild(catLabel);
+			catLabel.setAttribute('for', 'comboCat');
+			catLabel.classList.add("col-sm-2");
+			catLabel.classList.add("control-label");
+			catLabel.innerText = 'category';
+
+			var catdiv = document.createElement("div");
+			categoriesGroup.appendChild(catdiv);
+			catdiv.classList.add("col-sm-4");
+
+			var comboCat = document.createElement("select");
+			catdiv.appendChild(comboCat);
+			comboCat.classList.add("form-control");
+			comboCat.setAttribute('id', 'comboCat');
+			comboCat.setAttribute('placeholder', '...');
+
+
+			var subcatLabel = document.createElement("label");
+			categoriesGroup.appendChild(subcatLabel);
+			subcatLabel.setAttribute('for', 'comboSubCat');
+			subcatLabel.classList.add("col-sm-2");
+			subcatLabel.classList.add("control-label");
+			subcatLabel.innerText = 'subcategory';
+
+			var subcatdiv = document.createElement("div");
+			categoriesGroup.appendChild(subcatdiv);
+			subcatdiv.classList.add("col-sm-4");
+
+			var comboSubCat = document.createElement("select");
+			subcatdiv.appendChild(comboSubCat);
+			comboSubCat.classList.add("form-control");
+			comboSubCat.setAttribute('id', 'comboSubCat');
+			comboSubCat.setAttribute('placeholder', '...');
+
+
+			this.loadCategories(comboCat);
+			
 
 			var notesGroup = document.createElement("div");
 			form.appendChild(notesGroup);
