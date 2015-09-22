@@ -3,14 +3,16 @@ var ItemUI = (function(){
 	var module = function(name){
 		common.UIMod.call(this,name);
 		this.active = false;
-		this.configMap.events = ['itemuiValid']; 
-		this.configMap.requires = ['utils', 'pubsub', 'api'];
+		this.configMap.events = ['itemuiValid', 'itemui.addNewCategory', 
+			'itemui.categoryChanged', 'itemui.addNewSubCategory']; 
+		this.configMap.requires = ['utils', 'pubsub', 'api', 'wait4me'];
 		this.configMap.constants = {
 			nameMaxLength: 128,
 			amountMax: 999999,
 			notesMaxLength: 1024,
 			newCategoryToken: '*** new category ***',
-			newSubCategoryToken: '*** new sub category ***'
+			newSubCategoryToken: '*** new sub category ***',
+			notAvailableToken: 'not available'
 		};
 		this.stateMap.item = {
 				_id: null,
@@ -32,6 +34,31 @@ var ItemUI = (function(){
 		this.configMap.uicontainer = null;
 	};
 
+	module.prototype.loadItem = function(o, uielement, uimode){
+
+		this.configMap.uicontainer = uielement;
+		this.stateMap.item = o;
+
+		var col1 = document.createElement("div");
+		$( this.configMap.uicontainer ).append(col1);
+		col1.classList.add("col-sm-12");
+		col1.classList.add("col-md-6");
+		col1.setAttribute('id', 'col1');
+
+		var col2 = document.createElement("div");
+		$( this.configMap.uicontainer ).append(col2);
+		col2.classList.add("col-sm-12");
+		col2.classList.add("col-md-6");
+		col2.setAttribute('id', 'col2');
+
+		this.loadItemImages(o, col1) ;
+
+		this.loadItemProperties(col2, uimode);
+
+
+
+	};
+
 	module.prototype.setJqueryMap = function(){
 			this.stateMap.jqueryMap = {
 				$container : this.configMap.uicontainer
@@ -47,6 +74,133 @@ var ItemUI = (function(){
 				,$subCategory: $(col2).find('#comboSubCat')[0]
 
 			};
+	};
+
+	module.prototype.onEvent = function(event, data){
+
+		if( event == 'itemui.addNewSubCategory' ){
+			var subCategory  = data.value;
+			var category = data.category;
+
+			var cb = function(sm, cm){
+				var statemap = sm;
+				var configmap = cm;
+				var stopWait4me = function(){
+					var data = {
+						container: statemap.jqueryMap.$container,
+						state: false };
+					configmap.modules['pubsub'].publish('wait4me', data);
+				};
+				var ok = function(o){
+					stopWait4me();
+					var option = document.createElement("option");
+					option.text = o.value;
+					statemap.jqueryMap.$subCategory.add(option);
+					$( statemap.jqueryMap.$subCategory ).val(o.value);
+				};
+				var nok = function(o){
+					stopWait4me();
+					$( statemap.jqueryMap.$subCategory ).val(statemap.item.subCategory);
+					
+				};
+				return {ok: ok, nok: nok};
+			}(this.stateMap, this.configMap);
+
+			this.configMap.modules['pubsub'].publish('wait4me', 
+				{container: this.stateMap.jqueryMap.$container, state: true});
+			this.configMap.modules['api'].addSubCategory(subCategory, category, cb);
+
+
+		}
+
+		if( event == 'itemui.addNewCategory' ){
+			var category  = data.value;
+
+			var cb = function(sm, cm){
+				var statemap = sm;
+				var configmap = cm;
+				var stopWait4me = function(){
+					var data = {
+						container: statemap.jqueryMap.$container,
+						state: false };
+					configmap.modules['pubsub'].publish('wait4me', data);
+				};
+				var ok = function(o){
+					stopWait4me();
+					var option = document.createElement("option");
+					option.text = o.value;
+					statemap.jqueryMap.$category.add(option);
+					$( statemap.jqueryMap.$category ).val(o.value);
+					$( statemap.jqueryMap.$subCategory ).val('');
+				};
+				var nok = function(o){
+					stopWait4me();
+					$( statemap.jqueryMap.$category ).val(statemap.item.category);
+					
+				};
+				return {ok: ok, nok: nok};
+			}(this.stateMap, this.configMap);
+
+			this.configMap.modules['pubsub'].publish('wait4me', 
+				{container: this.stateMap.jqueryMap.$container, state: true});
+			this.configMap.modules['api'].addCategory(category,cb);
+		}
+
+		if( event == 'itemui.categoryChanged' ){
+			var category  = data.value;
+
+			if( this.configMap.constants.notAvailableToken == category ){
+				$( statemap.jqueryMap.$subCategory ).val(this.configMap.constants.notAvailableToken);
+				return;
+			}
+
+			var cb = function(sm, cm){
+				var statemap = sm;
+				var configmap = cm;
+				var stopWait4me = function(){
+					var data = {
+						container: statemap.jqueryMap.$container,
+						state: false };
+					configmap.modules['pubsub'].publish('wait4me', data);
+				};
+				var ok = function(o){
+					stopWait4me();
+					for(var i=0; i < statemap.jqueryMap.$subCategory.length; i++){
+						statemap.jqueryMap.$subCategory.remove(i);
+					}
+					
+					if(o.values && Array.isArray(o.values)){
+						for(var i = 0; i < o.values.length; i++ ){
+							var subcat = o.values[i];
+							var option = document.createElement("option");
+							option.text = subcat;
+							statemap.jqueryMap.$subCategory.add(option);
+						}
+					}
+					var option1 = document.createElement("option");
+					option1.text = configmap.constants.notAvailableToken;
+					statemap.jqueryMap.$subCategory.add(option1);
+
+					var option2 = document.createElement("option");
+					option2.text = configmap.constants.newSubCategoryToken;
+					statemap.jqueryMap.$subCategory.add(option2);
+
+					$( statemap.jqueryMap.$subCategory ).val('');
+				};
+				var nok = function(o){
+					stopWait4me();
+					$( statemap.jqueryMap.$subCategory ).val(statemap.item.subCategory);
+					
+				};
+				return {ok: ok, nok: nok};
+			}(this.stateMap, this.configMap);
+
+			this.configMap.modules['pubsub'].publish('wait4me', 
+				{container: this.stateMap.jqueryMap.$container, state: true});
+			this.configMap.modules['api'].getSubCategories(category,cb);
+
+
+		}
 	};
 
 	module.prototype.checkUiValidity = function(){
@@ -66,7 +220,7 @@ var ItemUI = (function(){
 
 
 	module.prototype.widgetValidStatusSetter = function(widget,status) {
-		var formGroup = $( widget ).parents('.form-group');
+		var formGroup = $( widget ).parents('.validation-aware').first();
 		formGroup.removeClass("has-error");
 		if(!status)
 			formGroup.addClass("has-error");
@@ -289,6 +443,72 @@ var ItemUI = (function(){
 			function(){notesWgtListener.listen(this);}
 		);
 
+		//---------------------------------subcategory widget
+
+		var subCategoryWgtListener = (function(stateMap, configMap){
+			var statemap = stateMap;
+			var configmap = configMap;
+
+			var listen = function(widget){
+
+				if( configmap.constants.newSubCategoryToken == widget.value ){
+					
+					var newSubCat = prompt("please provide a new sub category: ", null);
+					if( newSubCat )
+						configmap.modules['pubsub'].publish('itemui.addNewSubCategory',
+							{value: newSubCat, category: $(statemap.jqueryMap.$subCategory).val() });
+					else
+						$(statemap.jqueryMap.$subCategory).val(statemap.item.subCategory);
+
+				}
+
+			};
+
+			return {
+				listen: listen
+			};
+
+
+		})(this.stateMap, this.configMap);
+
+		$( this.stateMap.jqueryMap.$subCategory ).on('click', 
+			function(){subCategoryWgtListener.listen(this);}
+		);
+
+		//---------------------------------category widget
+
+		var categoryWgtListener = (function(stateMap, configMap){
+			var statemap = stateMap;
+			var configmap = configMap;
+
+			var listen = function(widget){
+
+				if( configmap.constants.newCategoryToken == widget.value ){
+
+					var newCat = prompt("please provide a new category: ", null);
+					if( newCat )
+						configmap.modules['pubsub'].publish('itemui.addNewCategory',{value: newCat});
+					else
+						$(statemap.jqueryMap.$category).val(statemap.item.category);
+
+				}
+				else if ( statemap.item.category !=  widget.value ){
+					configmap.modules['pubsub'].publish('itemui.categoryChanged',{value: widget.value});
+				}
+
+			};
+
+			return {
+				listen: listen
+			};
+
+
+		})(this.stateMap, this.configMap);
+
+		$( this.stateMap.jqueryMap.$category ).on('click', 
+			function(){categoryWgtListener.listen(this);}
+		);
+
 		//---------------------------------submit widget
 
 		var submitWgtListener = (function(stateMap, configMap){
@@ -342,32 +562,7 @@ var ItemUI = (function(){
 		);
 
 
-		//---------------------------------category widget
-
-		var categoryWgtListener = (function(stateMap, configMap){
-			var statemap = stateMap;
-			var configmap = configMap;
-			
-			var listen = function(widget){
-/*				var data = {};
-				data['item']=statemap.item;
-				//we assume submit is only clicked when 
-				//all the data is available to proceed
-				configmap.modules['pubsub'].publish('item.delete', data);*/
-				window.alert('change');
-
-			};
-
-			return {
-				listen: listen
-			};
-
-
-		})(this.stateMap, this.configMap);
-
-		$( this.stateMap.jqueryMap.$category ).on('change', 
-			function(){categoryWgtListener.listen(this);}
-		);
+		
 
 
 
@@ -375,30 +570,7 @@ var ItemUI = (function(){
 
 
 
-	module.prototype.loadItem = function(o, uielement, uimode){
 
-		this.configMap.uicontainer = uielement;
-		this.stateMap.item = o;
-
-		var col1 = document.createElement("div");
-		$( this.configMap.uicontainer ).append(col1);
-		col1.classList.add("col-sm-12");
-		col1.classList.add("col-md-6");
-		col1.setAttribute('id', 'col1');
-
-		var col2 = document.createElement("div");
-		$( this.configMap.uicontainer ).append(col2);
-		col2.classList.add("col-sm-12");
-		col2.classList.add("col-md-6");
-		col2.setAttribute('id', 'col2');
-
-		this.loadItemImages(o, col1) ;
-
-		this.loadItemProperties(col2, uimode);
-
-
-
-	};
 
 	module.prototype.loadItemProperties = function(container, uimode){
 		this.loadItemPropertiesUi(container);

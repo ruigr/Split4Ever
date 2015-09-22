@@ -12,7 +12,7 @@ var PubSub = (function() {
 	module.prototype.subscribe = function(events, subscriber){
 		this.configMap.modules['utils'].logger.enter(this.name, 'subscribe');
 		var ev = null, subs= null, subscribers = null;
-		for(i=0 ; i<events.length;i++){
+		for(var i=0 ; i<events.length;i++){
 			ev=events[i];
 			subs=null;
 			if(null == (subs=this.stateMap.eventSubscribers[ev])){
@@ -27,7 +27,7 @@ var PubSub = (function() {
 	module.prototype.unsubscribe = function(events, subscriber){
 		this.configMap.modules['utils'].logger.enter(this.name, 'unsubscribe');
 		var ev = null, subs = null;
-		for(i=0 ; i<events.length;i++){
+		for(var i=0 ; i<events.length;i++){
 			ev=events[i]
 			subs=null;
 			var index = -1;
@@ -40,13 +40,32 @@ var PubSub = (function() {
 		this.configMap.modules['utils'].logger.leave(this.name, 'unsubscribe');
 	};
 
-	module.prototype.publish = function(event, data){
+	//asynchronous function by default
+	module.prototype.publish = function(event, data, doAsynch){
+
 		this.configMap.modules['utils'].logger.enter(this.name, 'publish');
-		var subs = null;
+
 		this.configMap.modules['utils'].logger.log(this.name, 'publishing event: ' + event);
-		if(null != (subs = this.stateMap.eventSubscribers[event]) )
-			for(i=0;i<subs.length;i++)
-				subs[i].onEvent(event,data)
+		var subs = this.stateMap.eventSubscribers[event];
+		if(null != subs && Array.isArray(subs) ){
+			for( var i = 0; i < subs.length; i++){
+				var subscriber = subs[i];
+
+				if(false === doAsynch){
+					subscriber.onEvent(event,data);
+				}
+				else {
+					var func = function(sub, event, data){
+						var run = function(){
+							sub.onEvent(event,data);
+						};
+						return {run: run};
+					}(subscriber, event, data);
+
+					this.configMap.modules['utils'].async( func.run, null );
+				}
+			}
+		}
 		
 		this.configMap.modules['utils'].logger.leave(this.name, 'publish');
 	};

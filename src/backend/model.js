@@ -46,11 +46,16 @@ var Model = (function(){
 		};
 
 		var init = function(){
-			console.log('going to init collections');
-			if(null == connection.collection('items'))
-				connection.createCollection('items');
 
-			console.log('we have items collection');
+			console.log('going to init collections');
+			var collections = ['items', 'categories', 'subCategories'];
+			for(var i=0; i < collections.length; i++){
+				var col = collections[i];
+				if(null == connection.collection(col))
+					connection.createCollection(col);
+
+				console.log('there is collection: ' + col);
+			}
 
 		};
 
@@ -168,9 +173,67 @@ var Model = (function(){
 		console.log('Model.del@');		
 	};
 
+	var getCollection  = function(collectionName, callback) {
+
+		console.log('@Model.getCollection[%s]', collectionName);
+		var cursor = dbcnx.get().collection(collectionName).find();
+		var result = [];
+
+		cursor.each(function(err, o) {
+
+			if (err) {
+	  			console.error(err);
+	  		}
+
+	    	if (o != null) 
+	    		result.push(o);
+	    	else
+	    		callback.ok(result);
+
+	   	});
+
+		console.log('Model.getCollection@');
+	};
+
+	var post2Collection = function(collectionName, o, callback) {
+		custom.log('@Model.post2Collection[%s]', collectionName);
+
+		var statementCallback = function(cb, objId){
+			var _callback = cb;
+			var _id = objId;
+
+			var func = function(err,result){
+				if (err) {
+				  		console.error(err);
+				  		_callback.nok(err);
+				  	}
+				  	else {
+				  		console.log('pots successful with id: ' + _id.toString() );
+				  		_callback.ok(_id.toString());
+				  	}
+			};
+			return {
+				func:func
+			};
+		};
+
+		if(! o._id ) {
+			o._id = new ObjectID();
+			dbcnx.get().collection(collectionName).insertOne(o, statementCallback(callback, o._id ).func );
+		}
+		else {			
+			o._id = new ObjectID(o._id);
+			dbcnx.get().collection(collectionName).replaceOne(
+				{'_id' : o._id}, o, statementCallback(callback, o._id).func );
+		}
+		custom.log('Model.post2Collection@');
+	};
+
 	return { 
-		post: post,
-		getAll: getAll
+		post: post
+		,getAll: getAll
+		,getCollection: getCollection
+		,post2Collection: post2Collection
 		,get: get
 		,del: del
 	}; 

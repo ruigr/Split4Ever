@@ -10,6 +10,9 @@ var Api = (function(){
 	*/
 	var module = function(name){
 		common.Mod.call(this,name);
+		this.configMap.constants = {
+			NOT_APPLICABLE: 'NA'
+		};
 	};
 
 	module.prototype = Object.create(common.Mod.prototype);
@@ -31,10 +34,6 @@ var Api = (function(){
 		    error: callback.nok
 		});
 
-
-/*		var posting = $.post(url, item);
-		posting.done(callback.ok);
-		posting.fail(callback.nok);*/
 		console.log('Api.setItem@');
 
 	};
@@ -55,25 +54,58 @@ var Api = (function(){
 
 	module.prototype.getCategories = function(callback){
 		console.log('@Api.getCategories');
-		//var url = window.location.origin + '/api/item/' + id; 
-		//$.get(url).done(callback.ok).fail(callback.nok);
-		var data = [];
-		
-		callback.ok(data);
-
+		var url = window.location.origin + '/api/categories'; 
+		$.get(url).done(callback.ok).fail(callback.nok);
 		console.log('Api.getCategories@');
 	};
 
-	module.prototype.getSubCategories = function(cat, callback){
+	module.prototype.getSubCategories = function(callback){
 		console.log('@Api.getSubCategories');
-		//var url = window.location.origin + '/api/item/' + id; 
-		//$.get(url).done(callback.ok).fail(callback.nok);
-		var data = [];
-		
-		callback.ok(data);
-		
+		var url = window.location.origin + '/api/subCategories'; 
+		$.get(url).done(callback.ok).fail(callback.nok);
 		console.log('Api.getSubCategories@');
 	};
+
+	module.prototype.setCategory = function(o, callback){
+
+		console.log('@Api.setCategory');
+		console.log('category: ' + JSON.stringify(o));
+		var url = window.location.origin + '/api/categories'; 
+
+		$.ajax({
+			async:true,
+		    url: url,
+		    data: o,
+		    type: 'POST',
+		    success: callback.ok,
+		    dataType: 'json',
+		    error: callback.nok
+		});
+
+		console.log('Api.setCategory@');
+
+	};
+
+	module.prototype.setSubCategory = function(o, callback){
+
+		console.log('@Api.setSubCategory');
+		console.log('subCategory: ' + JSON.stringify(o));
+		var url = window.location.origin + '/api/subCategories'; 
+
+		$.ajax({
+			async:true,
+		    url: url,
+		    data: o,
+		    type: 'POST',
+		    success: callback.ok,
+		    dataType: 'json',
+		    error: callback.nok
+		});
+
+		console.log('Api.setSubCategory@');
+
+	};
+
 
 	module.prototype.delItem = function(id, callback){
 		console.log('@Api.eraseItem');

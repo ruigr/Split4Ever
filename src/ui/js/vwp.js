@@ -16,6 +16,7 @@ var vwp = (function () {
 	//load modules
 	var modulesMap = {
 		'utils': new Utils.module("utils"), 
+		'constants': new Constants.module("constants"), 
 		'pubsub': new PubSub.module("pubsub"),
 		'uishell': new UiShell.module("uishell"),
 		'header': new Header.module("header"), 
@@ -23,8 +24,14 @@ var vwp = (function () {
 		'item': new Item.module("item"), 
 		'api': new Api.module("api"), 
 		'browse': new Browse.module('browse'),
-		'itemui': new ItemUI.module("itemui") , 
-		'browseui': new BrowseUI.module("browseui")
+		'browseui': new BrowseUI.module("browseui"),
+		'wait4me': new Wait4Me.module("wait4me"),
+		'itemview': new ItemView.module("itemview") ,
+		'itemmodel': new ItemModel.module("itemmodel"),
+		'itemrender': new ItemRender.module("itemrender"),
+		'imagerender': new ImageRender.module("imagerender"),
+		'itemuievents': new ItemUiEvents.module("itemuievents")
+
 	};
 
 	//sort out dependencies

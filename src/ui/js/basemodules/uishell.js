@@ -8,7 +8,8 @@ var UiShell = (function() {
 		common.UIMod.call(this,name);
 		this.configMap.requires = ['utils', 'pubsub',
 			'header','footer','item','api',
-			'browse','itemui','browseui' ];
+			'browse','browseui', 'wait4me', 'itemview', 'itemmodel',
+			'itemrender', 'imagerender', 'itemuievents', 'constants' ];
 		this.configMap.anchor_schema_map = {};
 		this.stateMap.anchor_map = {};
 
