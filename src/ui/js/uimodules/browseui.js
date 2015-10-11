@@ -81,66 +81,71 @@ var BrowseUI = (function(){
 		else
 			p.textContent = item.notes;
 
-		for(var i = 0 ; i < item.images.length ; i++){
-			var figure = document.createElement("figure");
-			slideshow.appendChild(figure);
-			
-			if(i == 0)
-				figure.classList.add("show");
+		if( Array.isArray(item.images)){
 
-			figure.setAttribute('id', item._id);
-			var img = item.images[i]
-			var imgWidget = document.createElement("img");
-			figure.appendChild(imgWidget);
-			imgWidget.classList.add("img-thumbnail");
-			imgWidget.classList.add("img-thumbnail-fix");
-			imgWidget.file = img.name;
-			imgWidget.src = img.data;
-			imgWidget.setAttribute('id', img.name);
-			//figure.appendChild(figcaption);
+			for(var i = 0 ; i < item.images.length ; i++){
+				var figure = document.createElement("figure");
+				slideshow.appendChild(figure);
+				
+				if(i == 0)
+					figure.classList.add("show");
+
+				figure.setAttribute('id', item._id);
+				var img = item.images[i]
+				var imgWidget = document.createElement("img");
+				figure.appendChild(imgWidget);
+				imgWidget.classList.add("img-thumbnail");
+				imgWidget.classList.add("img-thumbnail-fix");
+				imgWidget.file = img.name;
+				imgWidget.src = img.data;
+				imgWidget.setAttribute('id', img.name);
+				//figure.appendChild(figcaption);
+			}
+
+			var spanPrev = document.createElement("span");
+			slideshow.appendChild(spanPrev);
+			spanPrev.classList.add("prev");
+			spanPrev.setAttribute('id', item._id);
+			spanPrev.textContent = '<';
+
+			var spanNext = document.createElement("span");
+			slideshow.appendChild(spanNext);
+			spanNext.classList.add("next");
+			spanNext.setAttribute('id', item._id);
+			spanNext.textContent = '>';
+
+			var counter = 0;
+			var figures = $( slideshow ).find('figure');
+			var numOfFigures = figures.length
+
+			var showCurrent = function(){
+				var itemToShow = Math.abs(counter%numOfFigures);
+			 
+				[].forEach.call( figures, function(el){
+					el.classList.remove('show');
+					}
+				);
+			 	logger.log(this.name, 'going to show image ' + itemToShow);
+				figures[itemToShow].classList.add('show');
+			};
+			
+
+			var spanN = $( slideshow ).find('.next','#' + item._id)[0];
+
+			$( spanN ).on('click', function() {
+				counter++;
+				showCurrent();
+				});
+			
+			var spanP = $( slideshow ).find('.prev','#' + item._id)[0];
+
+			$( spanP ).on('click',function() {
+				counter--;
+				showCurrent();
+				});
+
 		}
 
-		var spanPrev = document.createElement("span");
-		slideshow.appendChild(spanPrev);
-		spanPrev.classList.add("prev");
-		spanPrev.setAttribute('id', item._id);
-		spanPrev.textContent = '<';
-
-		var spanNext = document.createElement("span");
-		slideshow.appendChild(spanNext);
-		spanNext.classList.add("next");
-		spanNext.setAttribute('id', item._id);
-		spanNext.textContent = '>';
-
-		var counter = 0;
-		var figures = $( slideshow ).find('figure');
-		var numOfFigures = figures.length
-
-		var showCurrent = function(){
-			var itemToShow = Math.abs(counter%numOfFigures);
-		 
-			[].forEach.call( figures, function(el){
-				el.classList.remove('show');
-				}
-			);
-		 	logger.log(this.name, 'going to show image ' + itemToShow);
-			figures[itemToShow].classList.add('show');
-		};
-		
-
-		var spanN = $( slideshow ).find('.next','#' + item._id)[0];
-
-		$( spanN ).on('click', function() {
-			counter++;
-			showCurrent();
-			});
-		
-		var spanP = $( slideshow ).find('.prev','#' + item._id)[0];
-
-		$( spanP ).on('click',function() {
-			counter--;
-			showCurrent();
-			});
 		logger.leave(this.name, 'createItemWidget');
 	};
 
