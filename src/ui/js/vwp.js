@@ -15,6 +15,7 @@ var vwp = (function () {
 
 	//load modules
 	var modulesMap = {
+
 		'utils': new Utils.module("utils"), 
 		'constants': new Constants.module("constants"), 
 		'pubsub': new PubSub.module("pubsub"),
@@ -23,37 +24,48 @@ var vwp = (function () {
 		'footer': new Footer.module("footer"),
 		'item': new Item.module("item"), 
 		'api': new Api.module("api"), 
-		'browse': new Browse.module('browse'),
-		'browseui': new BrowseUI.module("browseui"),
-		'wait4me': new Wait4Me.module("wait4me"),
-		'itemview': new ItemView.module("itemview") ,
+		'browser': new Browser.module('browser')
+		/*
+		
+		,'wait4me': new Wait4Me.module("wait4me")
+		
+		,'itemview': new ItemView.module("itemview") ,
 		'itemmodel': new ItemModel.module("itemmodel"),
 		'itemrender': new ItemRender.module("itemrender"),
 		'imagerender': new ImageRender.module("imagerender"),
 		'itemuievents': new ItemUiEvents.module("itemuievents")
-
+		*/
 	};
 
-	//sort out dependencies
+	//set up modules dependencies
 	for(modName in modulesMap){
+
 		if(modulesMap.hasOwnProperty(modName)){
+
+			//for every module
 			var module = modulesMap[modName];
 			for(depName in modulesMap){
 				if(depName != modName && modulesMap.hasOwnProperty(depName) && 
 					-1 < module.configMap.requires.indexOf(depName)){
+					//if module named depName is required by module named modName
+					//add a depName pointer to modules map in modName
 					var dependency = modulesMap[depName];
 					module.configMap.modules[depName]=dependency;
 					console.log('added module dependency ' + depName + ' to module ' + module.name);
 				}
 			}
+
+			module.initModule();
+			console.log('called initModule on module ' + module.name);
 		}
 	}
 
-	var initModule = function ( $container ) {
-		modulesMap['uishell'].initModule( $container );
+	var init = function ( $container ) {
+		// init uishell
+		modulesMap['uishell'].show( $container );
 	};
 
 
-  return { initModule: initModule };
+  return { init: init };
 
 }());

@@ -1,10 +1,37 @@
+/*
 
-var common = (function() {
+	base
+		base module objects to be extended and
+		used as specific modules
 
-	
+		example:
+			var ExampleMod = (function(){
+
+				var module = function(name){
+					common.Mod.call(this,name);
+					this.configMap.requires = ['utils'];
+				};
+
+				module.prototype = Object.create(common.Mod.prototype);
+				module.prototype.constructor = module;
+				module.prototype.doStuff = function(x){};
+
+				return { module: module };
+
+			}());
+
+*/
+
+
+var base = (function() {
+
+	/*
+		Mod 
+			common module with no UI
+	*/
 	var Mod = function(name){
 		this.name = name;
-		this.active = true;
+
 		this.configMap = {
 			//requires: ['api'];
 			requires: [],
@@ -19,19 +46,22 @@ var common = (function() {
 	Mod.prototype.getName = function(){
 		return this.name;
 	};
-	Mod.prototype.isActive = function(){
-		return this.active;
+
+	Mod.prototype.configure = function(confMap){
+		for (var key in confMap) {
+		  if (confMap.hasOwnProperty(key)) {
+		    Object.defineProperty(this.configMap, key, confMap[key]);
+		  }
+		}
 	};
-	Mod.prototype.setActive = function(value){
-		this.active = value;
-	};
+
 	Mod.prototype.onEvent = function(event, data){
 		console.log("Mod.prototype.onEvent not implemented");
 	};
 	Mod.prototype.setEvents = function(){
 		console.log("Mod.prototype.setEvents not implemented");
 	};
-	Mod.prototype.initModule = function($container){
+	Mod.prototype.initModule = function(){
 		
 		if(null != this.configMap.events){
 			if(this.configMap.modules.hasOwnProperty('pubsub')){
@@ -39,7 +69,6 @@ var common = (function() {
 				pubsub.subscribe(this.configMap.events, this);
 			}
 		} 
-		
 
 	};
 	Mod.prototype.requires = function(dependency){
@@ -56,20 +85,15 @@ var common = (function() {
 		return result;
 	};
 
+	/*
+		UIMod 
+			UI module to be extended/implemented with specific features
+	*/
 	var UIMod = function(name){
 		Mod.call(this,name);
 		this.configMap.uicontainer = null;
-		this.configMap.main_html = null;
 		this.stateMap.jqueryMap = {} ;
-		/*
-			item: {
-				_id: null,
-				images:[],
-				name: '',
-				notes: '',
-				price: ''
-			}
-		*/
+
 	};
 
 	UIMod.prototype = Object.create(Mod.prototype);
@@ -79,28 +103,30 @@ var common = (function() {
 		console.log("UIMod.prototype.setJqueryMap not implemented");
 	};
 
-	UIMod.prototype.initUi = function(){
-		console.log("UIMod.prototype.initUi not implemented");
-	};
-
-	UIMod.prototype.initModule = function($container){
-		
-		if(null != this.configMap.events){
-			if(this.configMap.modules.hasOwnProperty('pubsub')){
-				var pubsub = this.configMap.modules['pubsub'];
-				pubsub.subscribe(this.configMap.events, this);
-			}
-		}
-
+	UIMod.prototype.show = function($container){
 		this.configMap.uicontainer = $container;
-		if(this.configMap.main_html)
-			this.configMap.uicontainer.html(this.configMap.main_html);
-		this.initUi();
+		this.initUI();
 		this.setJqueryMap();
 		this.setEvents();
 	};
 
-	return { Mod: Mod,
-		UIMod: UIMod };
+	UIMod.prototype.initUI = function(){
+		console.log("UIMod.prototype.initUI not implemented");
+	};
+
+
+	return { 
+		Mod: Mod,
+		UIMod: UIMod 
+	};
 
 }());
+		/*
+			item: {
+				_id: null,
+				images:[],
+				name: '',
+				notes: '',
+				price: ''
+			}
+		*/

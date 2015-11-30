@@ -5,7 +5,7 @@
 var Data = (function(){
 
 	var module = function(name){
-		common.Mod.call(this,name);
+		base.Mod.call(this,name);
 		this.stateMap = {
 			anchor_map : {				
 			}	
@@ -13,7 +13,7 @@ var Data = (function(){
 		this.configMap.events = ['retrieveData'];		
 	};
 
-	module.prototype = Object.create(common.Mod.prototype);
+	module.prototype = Object.create(base.Mod.prototype);
 	module.prototype.constructor = module;
 
 	module.prototype.onEvent = function(event, data){

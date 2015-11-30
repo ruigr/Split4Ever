@@ -1,13 +1,13 @@
 var Wait4Me = (function(){
 
 	var module = function(name){
-		common.UIMod.call(this,name);
+		base.UIMod.call(this,name);
 		this.configMap.events = ['wait4me'] ;
 		this.configMap.requires = ['pubsub'] ;
 		this.stateMap.throbber =  null;
 	};
 
-	module.prototype = Object.create(common.UIMod.prototype);
+	module.prototype = Object.create(base.UIMod.prototype);
 	module.prototype.constructor = module;
 	
 

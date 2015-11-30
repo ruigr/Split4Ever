@@ -2,7 +2,7 @@ var ItemView = (function(){
 
 	var module = function(name){
 
-		common.UIMod.call(this,name);
+		base.UIMod.call(this,name);
 		this.configMap.events = []; 
 		this.configMap.requires = ['utils', 'pubsub', 'api'
 			, 'itemrender', 'itemuievents', 'constants'];
@@ -13,7 +13,7 @@ var ItemView = (function(){
 
 	};
 
-	module.prototype = Object.create(common.UIMod.prototype);
+	module.prototype = Object.create(base.UIMod.prototype);
 	module.prototype.constructor = module;
 
 	module.prototype.initModule = function($container){
@@ -56,7 +56,7 @@ var ItemView = (function(){
 		this.configMap.modules['itemuievents'].init(this.stateMap);
 	};
 
-	module.prototype.initUi = function(){
+	module.prototype.initUI = function(){
 
 		var col1 = document.createElement("div");
 		$( this.configMap.uicontainer ).append(col1);

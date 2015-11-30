@@ -1,8 +1,7 @@
 var Item = (function(){
 
 	var module = function(name){
-		common.UIMod.call(this,name);
-		this.active = false;
+		base.UIMod.call(this,name);
 		this.configMap.events = ['onBody', 'uievents.model.set.images', 'model.update', 
 		'uievents.model.set.category', 'uievents.view.doRenderModel', 'uievents.model.set.subCategory',
 		'uievents.model.set.notes', 'uievents.model.set.price', 'uievents.model.set.name',
@@ -10,7 +9,7 @@ var Item = (function(){
 		this.configMap.requires = ['api', 'utils', 'pubsub', 'itemview', 'itemmodel'];
 	};
 
-	module.prototype = Object.create(common.UIMod.prototype);
+	module.prototype = Object.create(base.UIMod.prototype);
 	module.prototype.constructor = module;
 
 	module.prototype.initModule = function($container){

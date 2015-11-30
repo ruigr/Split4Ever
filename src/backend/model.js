@@ -48,7 +48,7 @@ var Model = (function(){
 		var init = function(){
 
 			console.log('going to init collections');
-			var collections = ['items', 'categories', 'subCategories'];
+			var collections = ['items', 'categories', 'subCategories', 'images'];
 			for(var i=0; i < collections.length; i++){
 				var col = collections[i];
 				if(null == connection.collection(col))
@@ -154,6 +154,32 @@ var Model = (function(){
 		console.log('Model.get@');
 	};
 
+	var getCollectionMember  = function(collection, idVal, callback) {
+		custom.log('@Model.getCollectionMember[' + collection  + ',' + idVal + ']');
+
+		var cursor = dbcnx.get().collection(collection).find({'_id': new ObjectID(idVal)});
+		var result = null;
+		cursor.each(function(err, item) {
+			
+			if (err) {
+	  			console.error(err);
+	  			callback.nok(err);
+	  		}
+	  		else {
+
+	  		}
+			
+	    	if (item != null) {
+	    		result = item;
+	    		custom.log(collection + ':member._id: ' + item._id);
+	    	}
+	    	else //this will stop when we have a null
+	    		callback.ok(result);
+
+	   	});
+		console.log('Model.getCollectionMember@');
+	};
+
 	var del = function(id, callback) {
 		custom.log('@Model.del');
 		dbcnx.get().collection('items').deleteOne(
@@ -227,6 +253,42 @@ var Model = (function(){
 				{'_id' : o._id}, o, statementCallback(callback, o._id).func );
 		}
 		custom.log('Model.post2Collection@');
+	};
+
+
+
+	var postMultiple2Collection = function(collectionName, os, callback) {
+		custom.log('@Model.postMultiple2Collection[%s]', collectionName);
+
+		var localCb = function(cb ,ids){
+			var func = function(err,result){
+				if (err) {
+				  		console.error(err);
+				  		cb.nok(err);
+				  	}
+				  	else {
+				  		console.log('posts successful: ' +  result.insertedCount );
+				  		cb.ok(ids);
+				  	}
+			};
+
+			return {
+				func:func
+			};
+		};
+
+
+
+		var filter = [];
+		os.forEach(function(el){
+			if(! el._id)
+				el._id = new ObjectID();
+
+			filter.push({_id: el._id});
+		});
+		dbcnx.get().collection(collectionName).updateMany(filter, os, {upsert: true}, localCb( callback, filter ).func );
+
+		custom.log('Model.postMultiple2Collection@');
 	};
 
 	return { 

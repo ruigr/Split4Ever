@@ -1,7 +1,7 @@
 var ItemModel = (function(){
 
 	var module = function(name){
-		common.Mod.call(this,name);
+		base.Mod.call(this,name);
 		this.configMap.events = []; 
 		this.configMap.requires = ['utils', 'pubsub', 'api'];
 		this.configMap.constants = { };
@@ -16,7 +16,7 @@ var ItemModel = (function(){
 			}; 
 	};
 
-	module.prototype = Object.create(common.Mod.prototype);
+	module.prototype = Object.create(base.Mod.prototype);
 	module.prototype.constructor = module;
 
 	module.prototype.initModule = function($container){

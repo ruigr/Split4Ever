@@ -7,12 +7,12 @@
 var ItemRender = (function() {
 
 	var module = function(name){
-		common.Mod.call(this,name);
+		base.Mod.call(this,name);
 		this.configMap.events = []; 
 		this.configMap.requires = ['utils', 'pubsub', 'imagerender', 'constants'];
 	};
 
-	module.prototype = Object.create(common.Mod.prototype);
+	module.prototype = Object.create(base.Mod.prototype);
 	module.prototype.constructor = module;
 
     module.prototype.init = function(statemap){

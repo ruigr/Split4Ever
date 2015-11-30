@@ -2,12 +2,12 @@
 var Constants = (function() {
 
 	var module = function(name){
-		common.Mod.call(this,name);
+		base.Mod.call(this,name);
 		this.configMap.events = []; 
 		this.configMap.requires = [];
 	};
 
-	module.prototype = Object.create(common.Mod.prototype);
+	module.prototype = Object.create(base.Mod.prototype);
 	module.prototype.constructor = module;
 
 	module.prototype.constant = {
@@ -23,6 +23,7 @@ var Constants = (function() {
 			newSubCategoryPrompt: 'please provide a new sub category: '
 			, newCategoryPrompt: 'please provide a new category: '
 			, delFilesPrompt: 'You are sure you want to delete files?'
+			
 	};
 
 	return { module: module};

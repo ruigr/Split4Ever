@@ -2,10 +2,10 @@
 var Utils = (function() {
 
 	var module = function(name){
-		common.Mod.call(this,name);
+		base.Mod.call(this,name);
 	};
 
-	module.prototype = Object.create(common.Mod.prototype);
+	module.prototype = Object.create(base.Mod.prototype);
 	module.prototype.constructor = module;
 
 
@@ -14,10 +14,10 @@ var Utils = (function() {
 			console.log("[" + new Date().toUTCString() + " | " + moduleName + "]"  + message);
 		};
 		var enter  = function(moduleName, method){
-			print(moduleName, "@@@ " + method);
+			print(moduleName, "<IN> " + method);
 		};
 		var leave  = function(moduleName, method){
-			print(moduleName, method + " @@@");
+			print(moduleName, "<OUT> " + method);
 		};
 		var log = function(moduleName, msg){
 			print(moduleName, '<LOG> ' +msg);
@@ -70,6 +70,28 @@ var Utils = (function() {
 
     };
     
+    module.prototype.createElement = function(elementType, classesArray, attributesArray){
+
+		var element = document.createElement(elementType);
+
+		if(classesArray) {
+			classesArray.forEach(
+				function(item){
+					element.classList.add(item);
+				}
+			);
+		}
+		
+		if(attributesArray){
+			attributesArray.forEach(
+				function(item){
+					element.setAttribute(item.name, item.value);
+				}
+			);
+		}
+		return element;
+	};
+
     module.prototype.cookieManager = function(){
 
     	var getItem = function (sKey) {

@@ -2,7 +2,7 @@
 var ItemUiEvents = (function() {
 
 	var module = function(name){
-		common.Mod.call(this,name);
+		base.Mod.call(this,name);
 		this.configMap.events = [ 'uievents.view.categoryChanged' ];
 		this.configMap.requires = ['utils', 'pubsub', 'constants', 'api' ];
 		this.stateMap.categories = [];
@@ -12,7 +12,7 @@ var ItemUiEvents = (function() {
 
 	};
 
-	module.prototype = Object.create(common.Mod.prototype);
+	module.prototype = Object.create(base.Mod.prototype);
 	module.prototype.constructor = module;
 
     module.prototype.init = function(state){

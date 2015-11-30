@@ -9,19 +9,22 @@ var Api = (function(){
 		}
 	*/
 	var module = function(name){
-		common.Mod.call(this,name);
+		base.Mod.call(this,name);
 		this.configMap.constants = {
 			NOT_APPLICABLE: 'NA'
 		};
 	};
 
-	module.prototype = Object.create(common.Mod.prototype);
+	module.prototype = Object.create(base.Mod.prototype);
 	module.prototype.constructor = module;
 	
 	module.prototype.setItem = function(item, callback){
 
 		console.log('@Api.setItem');
 		console.log('item: ' + JSON.stringify(item));
+
+		
+
 		var url = window.location.origin + '/api/item'; 
 
 		$.ajax({
@@ -38,9 +41,12 @@ var Api = (function(){
 
 	};
 
-	module.prototype.getItems = function(item, callback){
+
+
+	module.prototype.getItems = function(callback){
 		console.log('@Api.getItems');
 		var url = window.location.origin + '/api/items'; 
+
 		$.get(url).done(callback.ok).fail(callback.nok);
 		console.log('Api.getItems@');
 	};
@@ -50,6 +56,33 @@ var Api = (function(){
 		var url = window.location.origin + '/api/item/' + id; 
 		$.get(url).done(callback.ok).fail(callback.nok);
 		console.log('Api.getItem@');
+	};
+
+	module.prototype.getImage = function(id, callback){
+		console.log('@Api.getImage');
+		var url = window.location.origin + '/api/image/' + id;
+		$.get(url).done(callback.ok).fail(callback.nok);
+		console.log('Api.getImage@');
+	};
+
+	module.prototype.setImage = function(o, callback){
+
+		console.log('@Api.setImage');
+		console.log('category: ' + JSON.stringify(o));
+		var url = window.location.origin + '/api/image'; 
+
+		$.ajax({
+			async:true,
+		    url: url,
+		    data: o,
+		    type: 'POST',
+		    success: callback.ok,
+		    dataType: 'json',
+		    error: callback.nok
+		});
+
+		console.log('Api.setImage@');
+
 	};
 
 	module.prototype.getCategories = function(callback){
@@ -65,6 +98,7 @@ var Api = (function(){
 		$.get(url).done(callback.ok).fail(callback.nok);
 		console.log('Api.getSubCategories@');
 	};
+
 
 	module.prototype.setCategory = function(o, callback){
 
