@@ -16,15 +16,16 @@ var vwp = (function () {
 	//load modules
 	var modulesMap = {
 
-		'utils': new Utils.module("utils"), 
-		'constants': new Constants.module("constants"), 
-		'pubsub': new PubSub.module("pubsub"),
-		'uishell': new UiShell.module("uishell"),
-		'header': new Header.module("header"), 
-		'footer': new Footer.module("footer"),
-		'item': new Item.module("item"), 
-		'api': new Api.module("api"), 
-		'browser': new Browser.module('browser')
+		'utils': new Utils.module("utils") 
+		,'constants': new Constants.module("constants")
+		,'pubsub': new PubSub.module("pubsub")
+		,'uishell': new UiShell.module("uishell")
+		,'header': new Header.module("header") 
+		,'footer': new Footer.module("footer")
+		,'api': new Api.module("api")
+		,'browser': new Browser.module('browser')
+		,'itemctrl': new ItemCtrl.module('itemctrl')
+		
 		/*
 		
 		,'wait4me': new Wait4Me.module("wait4me")
