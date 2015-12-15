@@ -42,14 +42,14 @@ var Header = (function(){
 		button1.appendChild(span4);
 
 		var a1 = this.configMap.modules['utils'].createElement('a', 
-			["navbar-brand","navbar-brand-o"], [{ name: 'href', value: window.location.origin + '/#body=browse'} ]);
+			["navbar-brand","navbar-brand-o"], [{ name: 'href', value: window.location.origin + '/#body=browser'} ]);
 		div1.appendChild(a1);
 
 		var img1 = this.configMap.modules['utils'].createElement('img', ["img-rounded"], [ { name: 'src', value: 'img/header.png'} ]);
 		a1.appendChild(img1);
 
 		var a2 = this.configMap.modules['utils'].createElement('a', 
-			["navbar-brand","navbar-brand-o"], [{ name: 'href', value: window.location.origin + '/#body=browse'} ]);
+			["navbar-brand","navbar-brand-o"], [{ name: 'href', value: window.location.origin + '/#body=browser'} ]);
 		div1.appendChild(a2);
 		a2.innerHTML='VWPARTS<small><em> pecas classicas VW</em></small><br>+351 91 91 594 54';
 
@@ -98,7 +98,8 @@ var Header = (function(){
 		else
 			if(event == 'onContainerDefinition'){
 				this.configMap.modules['utils'].logger.info(this.name, 'received container, going to show');
-				this.show(data.header);
+				this.setContext({ container: data.header } );
+				this.show();
 			}
 			
 		this.configMap.modules['utils'].logger.leave(this.name, 'onEvent');

@@ -19,7 +19,8 @@ var Footer = (function(){
 		this.configMap.modules['utils'].logger.enter(this.name, 'onEvent[' + event + ']');
 		if(event == 'onContainerDefinition'){
 			this.configMap.modules['utils'].logger.info(this.name, 'received container, going to show');
-			this.show(data.footer);
+			this.setContext({container: data.footer});
+			this.show();
 		}
 		this.configMap.modules['utils'].logger.leave(this.name, 'onEvent');
 	};

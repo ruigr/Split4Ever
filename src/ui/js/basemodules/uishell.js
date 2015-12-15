@@ -86,12 +86,12 @@ var UiShell = (function() {
 					return false;
 				};
 
-				var data = {};
-				data['body']=statemap.anchor_map.body;
-				data['config']=statemap.anchor_map['_body'];
-				data['container']=statemap.jqueryMap.$body;
+				var context = {};
+				context = configmap.modules['utils'].copyObjProps2Obj(statemap.anchor_map['_body'], context);
+				context['body']=statemap.anchor_map.body;
+				context['container']=statemap.jqueryMap.$body;
 
-				configmap.modules['pubsub'].publish('onBody', data);
+				configmap.modules['pubsub'].publish('onBody', context);
 
 				return false;
 			};
@@ -107,11 +107,11 @@ var UiShell = (function() {
 			header and footer modules should react to this
 		*/
 		this.configMap.modules['utils'].logger.info(this.name, 'going to send header and footer definition');
-		var data = {
+		var context = {
 			header: this.stateMap.jqueryMap.$header,
 			footer: this.stateMap.jqueryMap.$footer
 		}
-		this.configMap.modules['pubsub'].publish('onContainerDefinition', data);
+		this.configMap.modules['pubsub'].publish('onContainerDefinition', context);
 
 		this.configMap.modules['utils'].logger.info(this.name, 'triggering initial hashchange');
 		$(window).bind('hashchange', hashChangeCallBack.onChange ).trigger('hashchange');

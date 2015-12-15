@@ -1,20 +1,59 @@
 module.exports = function(grunt) {
 	// Project configuration.
 	grunt.initConfig({
-        
+        concurrent: {
+          dev: {
+            tasks: ['nodemon', 'watch'],
+            options: {
+                logConcurrentOutput: true,
+            }
+          }
+        },
         clean: {
             js:'dist/**/*'
         },
-
+        nodemon: {
+          dev: {
+            script: 'dist/backend/index.js',
+            options: {
+                logConcurrentOutput: true,
+                nodeArgs: ['--debug'],
+                env: {
+                          "NODE_ENV": "development"
+                        , "NODE_CONFIG": "dev"
+                },
+                watch: ["server"],
+                callback: function (nodemon) {
+                    nodemon.on('log', function (event) {
+                      console.log(event.colour);
+                    });
+                    // opens browser on initial server start 
+                    nodemon.on('config:update', function () {
+                      // Delay before server listens on port 
+                      setTimeout(function() {
+                        require('open')('http://localhost:3000');
+                      }, 1000);
+                    });
+                    // refreshes browser when server reboots 
+                    nodemon.on('restart', function () {
+                      // Delay before server listens on port 
+                      setTimeout(function() {
+                        require('fs').writeFileSync('.rebooted', 'rebooted');
+                      }, 1000);
+                    });
+                }
+            }
+          }
+        },
         jshint: ['Gruntfile.js'],	
         pkg: grunt.file.readJSON('package.json'),
-
         concat:{
 			dist: {
         			src: [ 
             				'src/ui/js/libs/*.js' 
                             ,'src/ui/js/basemodules/*.js'
                             ,'src/ui/js/uimodules/*.js'
+                            ,'src/ui/js/**/*.js'
             				,'src/ui/js/*.js'
         			],
         			dest: 'dist/ui/js/vwp.js'
@@ -51,7 +90,13 @@ module.exports = function(grunt) {
         			options: {
             				spawn: false
         			}
-    			}  
+    			},
+                server: {
+                    files: ['.rebooted'],
+                    options: {
+                        options: { nospawn: true, livereload: true }
+                    }
+                }
 		}
 
 	});
@@ -62,6 +107,8 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-nodemon');
+    grunt.loadNpmTasks('grunt-concurrent');
 	// Default task(s).
 	grunt.registerTask('default', ['concat', 'copy', 'watch', 
         'jshint', 'clean']);

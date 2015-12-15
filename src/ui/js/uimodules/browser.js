@@ -10,12 +10,12 @@ var Browser = (function(){
 	module.prototype.constructor = module;
 
 
-	module.prototype.onEvent = function(event, data){
+	module.prototype.onEvent = function(event, context){
 		this.configMap.modules['utils'].logger.enter(this.name, 'onEvent[' + event + ']');
 
-		if(event == "onBody" && null != data.body && data.body == "browser"){
+		if(event == "onBody" && null != context.body && context.body == "browser"){
 
-			this.configMap.uicontainer = data.container;
+			this.configMap.uicontainer = context.container;
 			this.configMap.uicontainer.empty();
 
 			var callback = (function(uimodule, uielement) {
@@ -33,7 +33,6 @@ var Browser = (function(){
 			}(this, this.configMap.uicontainer));
 
 			this.configMap.modules['api'].getItems(callback);
-
 
 		}
 		

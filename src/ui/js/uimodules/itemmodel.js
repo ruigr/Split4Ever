@@ -2,104 +2,83 @@ var ItemModel = (function(){
 
 	var module = function(name){
 		base.Mod.call(this,name);
-		this.configMap.events = []; 
+		this.configMap.events = ['request.item', 'persist.item', 'remove.item']; 
 		this.configMap.requires = ['utils', 'pubsub', 'api'];
-		this.configMap.constants = { };
-		this.stateMap.item = {
+		this.stateMap.context = {
+			item : {
 				_id: null,
-				images:[],
+				images:[
+				//'','',''...... objectIDs
+				],
 				name: '',
 				notes: '',
 				price: '',
-				category:'',
-				subCategory: ''
-			}; 
+				category:'', // {name: '....'}
+				subCategory: '' // {name: '....', category:'....'}
+			}
+		}; 
 	};
 
 	module.prototype = Object.create(base.Mod.prototype);
 	module.prototype.constructor = module;
 
-	module.prototype.initModule = function($container){
-		this.configMap.modules['pubsub'].subscribe(this.configMap.events, this);
-		this.configMap.uicontainer = null;
-	};
+	module.prototype.onEvent = function(event, context){
 
-	module.prototype.init = function(id){
-		this.stateMap.item._id=id;
-		this.loadModel();
-	};
+		this.configMap.modules['utils'].logger.enter(this.name, s.sprintf('onEvent(%s,%s)',event, context));
 
-	module.prototype.loadModel = function(){
+		this.stateMap.context = this.configMap.modules['utils'].copyObjProps2Obj(context, this.stateMap.context);
 
-		if(this.stateMap.item._id){
-			var callback = function(mod){
-				var module = mod;
+		if( event == 'request.item' ) {
+			if(null == this.stateMap.context.id){
+				this.configMap.modules['pubsub'].publish('got.item', this.stateMap.context);
+			}
+			else {
+				var callback = function(mod){
 					var ok = function(o){
-						module.stateMap.item = o;
-						module.configMap.modules['pubsub'].publish('model.update', module.stateMap.item);
+						mod.stateMap.context.item = o;
+						mod.configMap.modules['pubsub'].publish('got.item', mod.stateMap.context);
 					};
 					var nok = function(o){
-						module.configMap.modules['utils'].logger.error(module.name, o);
+						mod.configMap.modules['utils'].logger.error(mod.name, o);
 					};
 					return {ok: ok, nok: nok};
+				} (this);
+				this.configMap.modules['api'].getItem(this.stateMap.context.id, callback);
+			}
+		}
+
+		if( event == 'persist.item' ) {
+
+			var callback = function(mod){
+				var ok = function(o){
+					mod.stateMap.context.item._id = o;
+					mod.configMap.modules['pubsub'].publish('got.item', mod.stateMap.context);
+				};
+				var nok = function(o){
+					module.configMap.modules['utils'].logger.error(module.name, o);
+				};
+				return {ok: ok, nok: nok};
 			}(this);
-			this.configMap.modules['api'].getItem(this.stateMap.item._id, callback);
-		}
-		else{
-			this.stateMap.item = { _id: null, images:[], name: '',
-				notes: '', price: '', category:'', subCategory: '' };
-			this.configMap.modules['pubsub'].publish('model.update', this.stateMap.item);
+
+			this.configMap.modules['api'].setItem(this.stateMap.context.item, callback);
 		}
 
-	};
+		if( event == 'remove.item' ) {
 
-	module.prototype.persist = function(){
+			var callback = function(mod){
+				var ok = function(o){
+					window.location = window.location.origin + '/#body=browser';
+				};
+				var nok = function(o){
+					module.configMap.modules['utils'].logger.error(module.name, o);
+				};
+				return {ok: ok, nok: nok};
+			}(this);
 
-		var callback = function(mod){
-			var module = mod;
-			var ok = function(o){
-				module.stateMap.item._id = o;
-				module.configMap.modules['pubsub'].publish('model.update', module.stateMap.item);
-			};
-			var nok = function(o){
-				module.configMap.modules['utils'].logger.error(module.name, o);
-			};
-			return {ok: ok, nok: nok};
-		}(this);
-
-		this.configMap.modules['api'].setItem(this.stateMap.item, callback);
-
-	};
-
-	module.prototype.remove = function(){
-		var callback = function(mod){
-			var module = mod;
-			var ok = function(o){
-				window.location = window.location.origin + '/#body=browse';
-			};
-			var nok = function(o){
-				module.configMap.modules['utils'].logger.error(module.name, o);
-			};
-			return {ok: ok, nok: nok};
-		}(this);
-
-		this.configMap.modules['api'].delItem(this.stateMap.item._id, callback);
-	};
-
-	module.prototype.get = function(){
-		return this.stateMap.item;
-	};
-
-	module.prototype.set = function(property, value){
-
-		if( this.stateMap.item.hasOwnProperty(property) ){
-			this.stateMap.item[property] = value;
-			this.configMap.modules['pubsub'].publish('model.update', this.stateMap.item);
-		}
-		else{
-			this.configMap.modules['utils'].logger.warn(this.name, 'tried to set an unknown model property');
+			this.configMap.modules['api'].delItem(this.stateMap.context.item._id, callback);
 		}
 
+		this.configMap.modules['utils'].logger.leave(module.name, 'onEvent');
 	};
 
 	return { module: module };

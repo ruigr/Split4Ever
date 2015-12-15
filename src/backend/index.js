@@ -18,16 +18,12 @@ var options = {
   //index: false,
   redirect: false
 };
-
-var PORT=3000;
-if(process.env.PORT)
-	PORT=process.env.PORT;
+app.set('port', process.env.PORT || 3000);
 
 if(custom.areWeOnDocker())
 	app.use(express.static('ui', options));
 else
 	app.use(express.static('dist/ui', options));
-
 
 
 app.get('/api/items', 
@@ -282,9 +278,22 @@ app.delete('/api/item/:id',
 	}
 );
 
+// custom 404 page
+app.use(function(req, res){
+	res.type('text/plain');
+	res.status(404);
+	res.send('404 - Not Found');
+});
 
+// custom 500 page
+app.use(function(err, req, res, next){
+	console.error(err.stack);
+	res.type('text/plain');
+	res.status(500);
+	res.send('500 - Server Error');
+});
 
-var server = app.listen(PORT, function () {
+var server = app.listen(app.get('port'), function () {
 
   var host = server.address().address;
   var port = server.address().port;

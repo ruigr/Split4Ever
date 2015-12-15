@@ -39,12 +39,17 @@ var base = (function() {
 			modules: {}
 		}; 
 		this.stateMap = {
-			anchor_map : {}	
+			anchor_map : {}	,
+			context: null
 		}; 
 	};
 
 	Mod.prototype.getName = function(){
 		return this.name;
+	};
+
+	Mod.prototype.setContext = function(context){
+		this.stateMap.context = context;
 	};
 
 	Mod.prototype.configure = function(confMap){
@@ -55,9 +60,21 @@ var base = (function() {
 		}
 	};
 
-	Mod.prototype.onEvent = function(event, data){
+	Mod.prototype.onEvent = function(event, context){
 		console.log("Mod.prototype.onEvent not implemented");
 	};
+
+	Mod.prototype.throw = function(msg){
+		throw {
+			origin: this.name,
+			message: msg
+		};
+	};
+
+	Mod.prototype.validateContext = function(){
+		console.log("Mod.prototype.validateContext not implemented");
+	};
+
 	Mod.prototype.setEvents = function(){
 		console.log("Mod.prototype.setEvents not implemented");
 	};
@@ -103,17 +120,33 @@ var base = (function() {
 		console.log("UIMod.prototype.setJqueryMap not implemented");
 	};
 
-	UIMod.prototype.show = function($container){
-		this.configMap.uicontainer = $container;
-		this.initUI();
-		this.setJqueryMap();
-		this.setEvents();
+	UIMod.prototype.getJqueryMap = function(){
+		return this.stateMap.jqueryMap;
+	};
+
+	UIMod.prototype.validateContext = function(){
+		if(null == this.stateMap.context.container)
+			this.throw ("context must provide container property");
 	};
 
 	UIMod.prototype.initUI = function(){
 		console.log("UIMod.prototype.initUI not implemented");
 	};
 
+	UIMod.prototype.load = function(){
+		console.log("UIMod.prototype.load not implemented");
+	};
+
+	UIMod.prototype.show = function(){
+		this.validateContext();
+		this.configMap.uicontainer = this.stateMap.context.container;
+		this.initUI();
+		this.setJqueryMap();
+		this.setEvents();
+		this.load();
+	};
+
+	
 
 	return { 
 		Mod: Mod,

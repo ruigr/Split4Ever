@@ -25,13 +25,14 @@ var vwp = (function () {
 		,'api': new Api.module("api")
 		,'browser': new Browser.module('browser')
 		,'itemctrl': new ItemCtrl.module('itemctrl')
-		
+		,'itemmodel': new ItemModel.module("itemmodel")
+		,'itemview': new ItemView.module("itemview"),
+		'itemformwidget': new ItemFormWidget.module("itemformwidget"),
+		'itemformevents': new ItemFormEvents.module("itemformevents"),
+		'itemformloader': new ItemFormLoader.module("itemformloader"),
 		/*
 		
 		,'wait4me': new Wait4Me.module("wait4me")
-		
-		,'itemview': new ItemView.module("itemview") ,
-		'itemmodel': new ItemModel.module("itemmodel"),
 		'itemrender': new ItemRender.module("itemrender"),
 		'imagerender': new ImageRender.module("imagerender"),
 		'itemuievents': new ItemUiEvents.module("itemuievents")
@@ -63,7 +64,9 @@ var vwp = (function () {
 
 	var init = function ( $container ) {
 		// init uishell
-		modulesMap['uishell'].show( $container );
+		var context = { container: $container };
+		modulesMap['uishell'].setContext( context );
+		modulesMap['uishell'].show();
 	};
 
 

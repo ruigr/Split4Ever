@@ -60,6 +60,17 @@ var Utils = (function() {
 
     };
 
+	module.prototype.copyObjProps2Obj = function(source, destination){
+
+		if( null != source ) {
+			for(prop in source){
+				if(source.hasOwnProperty(prop))
+					destination[prop] = source[prop]
+			}
+		}
+		return destination;
+    };	
+
     module.prototype.async = function(func, callback){
 
     	setTimeout(function(){
