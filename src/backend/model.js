@@ -1,125 +1,103 @@
 //mongodb://username:password@hostname:port/database
+var PragmaLogger = require('pragma-logger');
 var custom = require('./custom.js');
 var mongolib = require('mongodb');
-var ObjectID = mongolib.ObjectID
+var ObjectID = mongolib.ObjectID;
 var mongoClient = mongolib.MongoClient;
 var util = require('util');
 var assert = require('assert');
 
-var DB_CONNECT_STRING = 'mongodb://app:password@localhost:27017/vwparts';
-
-if(process.env.DB_CONN_STR)
-	DB_CONNECT_STRING = process.env.DB_CONN_STR;
-
-if(custom.areWeOnBluemix() && custom.doWeHaveServices()){
-	DB_CONNECT_STRING = custom.getMongoConnectString();
-	if(custom.areWeOnDocker()){
-		custom.log('waiting for bluemix network to pop up...');
-		custom.sleep(120000);
-		custom.log('...resuming now');	
-	}
-}
-
-console.log('going to connect to db in: ' + DB_CONNECT_STRING);
 
 var Model = (function(){
 
+	var DB_CONNECT_STRING = 'mongodb://app:password@localhost:27017/vwparts';
+	var logger = custom.createLogger('model');
+	var collectionMap = {};
+	var connection = null;
 
-	var dbcnx = (function(){
-		custom.log('@dbcnx');
-		var connection = null;
+	var delCollection = function(collectionName, callback){
 
-		var callback = function(err, db){
-			assert.equal(null, err);
-			console.log('connected to db !;-)');
-			setConnection(db);
-		};
-
-		var setConnection = function(o){
-			connection = o;
-			init();
-			//console.log('new db connection: ' + util.inspect(connection));
-		};
-
-		var get = function() {
-			return connection;
-		};
-
-		var init = function(){
-
-			console.log('going to init collections');
-			var collections = ['items', 'categories', 'subCategories', 'images'];
-			for(var i=0; i < collections.length; i++){
-				var col = collections[i];
-				if(null == connection.collection(col))
-					connection.createCollection(col);
-
-				console.log('there is collection: ' + col);
+		var dropCallback = function(error, result){
+			if(error) {
+				logger.error(error);
+				if(callback)
+					callback.nok(JSON.parse(error));
 			}
-
+			else {
+				var o = JSON.parse(result);
+				logger.info(util.format('dropped collection %s', collectionName));
+				if(callback)
+					callback.ok(o);
+			}
 		};
 
-		return {
-			get : get,
-			callback: callback
-		};
-		custom.log('dbcnx@');
-	}());
+		connection.dropCollection(collectionName, dropCallback)
 
-		
-	mongoClient.connect(DB_CONNECT_STRING, dbcnx.callback);
-
-
-	var post = function(o, callback) {
-		custom.log('@Model.post');
-		var id = null;
-
-		var cbObj = function(cb, objId){
-			var _callback = cb;
-			var _id = objId;
-
-			var f = function(err,result){
-				if (err) {
-				  		console.error(err);
-				  		_callback.nok(err);
-				  	}
-				  	else {
-				  		console.log('pots successful with id: ' + _id.toString() );
-				  		_callback.ok(_id.toString());
-				  	}
-			};
-
-			return {
-				f:f
-			};
-
-		};
-
-		if(! o._id ) {
-			id = new ObjectID();
-			o._id = id;
-			var c = cbObj(callback, id);
-			dbcnx.get().collection('items').insertOne(o, c.f );
-		}
-		else {			
-			id = new ObjectID(o._id);
-			o._id = id;
-			var c = cbObj(callback, id);
-			dbcnx.get().collection('items').replaceOne(
-				{'_id' : o._id}, o, c.f );
-		}
-
-		
 	};
 
-	var getAll  = function(callback) {
+	var init = function(collections, initCallback) {
+		if(!Array.isArray(collections))
+			throw 'must provide array with collection names';
 
-		console.log('@Model.getAll');
-		var cursor = dbcnx.get().collection('items').find();
+		var connectionString = DB_CONNECT_STRING;
+		if(process.env.DB_CONN_STR)
+				connectionString = process.env.DB_CONN_STR;
+
+		if(custom.areWeOnBluemix() && custom.doWeHaveServices()){
+			connectionString = custom.getMongoConnectString();
+			if(custom.areWeOnDocker()){
+				logger.info('...waiting for bluemix network to pop up...');
+				custom.sleep(120000);
+				logger.info('...resuming now');	
+			}
+		};
+
+		var callback = (function(cb){
+			var f = function(err, db){
+				if(null != err) {
+					logger.error(err);
+					if(null != cb)
+						cb.nok(err);
+				}
+				else {
+					logger.info('...connected to db !;-)');
+					connection = db;
+					for( i = 0; i < collections.length; i++){
+						var collection = collections[i];
+						connection.createCollection(collection, {}, 
+							function(err,c){
+								if(null != err)
+									logger.error(' !!! error creating collection: ' + collection);
+								else{
+									collectionMap[collection] = c;
+									logger.info('...created collection: ' + collection);
+								}
+								logger.info(util.format('collection map has now %d elements', Object.keys(collectionMap).length));
+							}
+						);
+						custom.sleep(1000);
+					}
+					
+
+					if(null != cb)
+						cb.ok();
+				}
+			};
+			return { f: f };
+		})(initCallback);
+		logger.info('going to connect to db in: ' + connectionString);
+		mongoClient.connect(connectionString, callback.f);
+
+	};
+
+
+	var getAll  = function(collectionName, callback) {
+
+		logger.trace('@Model.getAll');
+		var cursor = collectionMap[collectionName].find();
 		var result = [];
 
 		cursor.each(function(err, item) {
-			//console.log('cursor getting an item: ' + util.inspect(item));
 			if (err) {
 	  			console.error(err);
 	  		}
@@ -132,8 +110,113 @@ var Model = (function(){
 	   	});
 		
 
-		console.log('Model.getAll@');
+		logger.trace('Model.getAll@');
 	};
+
+	//returns a result object or an error
+	/* result: 
+		ok	Number	Is 1 if the command executed correctly.
+		n	Number	The total count of documents deleted.
+	*/
+	var delAll = function(collectionName, callback) {
+
+		logger.trace('@Model.delAll');
+		
+		var delCallback = function(error, result){
+			if(error) {
+				logger.error(error);
+				if(callback)
+					callback.nok(JSON.parse(error));
+			}
+			else {
+				var o = JSON.parse(result);
+				if( o.ok == 1 )
+					logger.info(util.format('deleted %d elements', o.n));
+				else
+					logger.info(util.format('delAll was not successful [ok: %d deleted: %d]', o.ok, o.n));
+				
+				if(callback)
+					callback.ok(o);
+			}
+		};
+
+		collectionMap[collectionName].deleteMany({}, delCallback);
+		logger.trace('Model.delAll@');		
+	};
+
+	/*
+		returns  id or err
+
+	*/
+	var post = function(collectionName, o, callback) {
+		logger.trace('@Model.post');
+		var id = null;
+
+		var postCallback = function(callback, objId){
+
+			var f = function(err,r){
+				if (err) {
+				  	logger.error(err);
+					if(callback)
+						callback.nok(JSON.parse(err));
+				}
+				else {
+					var o = JSON.parse(r);
+					if( o.ok == 1 ){
+				  		logger.info(util.format('inserted %d elements in collection %s', o.n, collectionName));
+				  		if(callback)
+							callback.ok(objId);
+					}
+				  	else {
+				  		logger.info(util.format('result %d when inserting elements in collection %s', o.ok, collectionName));
+				  		if(callback)
+				  			callback.nok(JSON.parse(new Error('insert was not ok')));
+				  	}
+				}
+			};
+
+			return {
+				f:f
+			};
+
+		};
+
+		if(! o._id ) {
+			id = new ObjectID();
+			o._id = id;
+			var c = postCallback(callback, id);
+			collectionMap[collectionName].insertOne(o, c.f );
+		}
+		else {			
+			id = new ObjectID(o._id);
+			o._id = id;
+			var c = postCallback(callback, id);
+			collectionMap[collectionName].replaceOne(
+				{'_id' : o._id}, o, c.f );
+		}
+
+		logger.trace('Model.post@');
+	};
+
+
+	return { 
+		getAll: getAll
+		, init: init
+		, delAll: delAll
+		, post: post
+		, delCollection: delCollection
+		/*
+		,getCollection: getCollection
+		,post2Collection: post2Collection
+		,get: get
+		,del: del*/
+	}; 
+
+}());
+
+module.exports = Model;
+
+	/*
 
 	var get  = function(idVal, callback) {
 		custom.log('@Model.get[' + idVal  + ']');
@@ -289,18 +372,6 @@ var Model = (function(){
 		dbcnx.get().collection(collectionName).updateMany(filter, os, {upsert: true}, localCb( callback, filter ).func );
 
 		custom.log('Model.postMultiple2Collection@');
-	};
+	};*/
 
-	return { 
-		post: post
-		,getAll: getAll
-		,getCollection: getCollection
-		,post2Collection: post2Collection
-		,get: get
-		,del: del
-	}; 
-
-}());
-
-module.exports = Model;
 

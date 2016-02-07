@@ -44,8 +44,7 @@ var PubSub = (function() {
 	module.prototype.publish = function(event, data, doAsynch){
 
 		this.configMap.modules['utils'].logger.enter(this.name, 'publish');
-
-		this.configMap.modules['utils'].logger.log(this.name, 'publishing event: ' + event);
+		this.configMap.modules['utils'].logger.log(this.name, s.sprintf('publishing event %s with data: %s', event, JSON.stringify(data)));
 		var subs = this.stateMap.eventSubscribers[event];
 		if(null != subs && Array.isArray(subs) ){
 			for( var i = 0; i < subs.length; i++){

@@ -74,13 +74,14 @@ var Utils = (function() {
     module.prototype.async = function(func, callback){
 
     	setTimeout(function(){
-    		func();
+    		var result = func();
     		if(null != callback)
-    			callback();
+    			callback(result);
     	}, 0);
 
     };
     
+
     module.prototype.createElement = function(elementType, classesArray, attributesArray){
 
 		var element = document.createElement(elementType);

@@ -1,16 +1,62 @@
-var custom = require('./custom.js');
-var util = require('util');
 var express = require('express');
-var model = require('./model.js');
-var app = express();
+var util = require('util');
+var favicon = require('serve-favicon');
 var bodyParser = require('body-parser');
+var methodOverride = require('method-override');
+var cookieSession = require('cookie-session');
+var uuid = require('uuid');
+var cookieParser = require('cookie-parser');
 var multer = require('multer'); 
+var PragmaLogger = require('pragma-logger');
 
 
+//CONSTANTS
+var PORT=8080;
+var BODY_MAX_SIZE = '10240kb';
+
+
+var logger = new PragmaLogger({
+    logger: {
+      charset: 'utf8',
+      levels: {
+        debug: './logs/%pid_debug_%y-%m-%d-app.log',
+        error: './logs/%pid_error_%y-%m-%d-app.log',
+        warn: './logs/%pid_warn_%y-%m-%d-app.log',
+        trace: './logs/%pid_trace_%y-%m-%d-app.log',
+        info: './logs/%pid_info_%y-%m-%d-app.log'
+      },
+      messageFormat: '%t \t| %name :: %lvl \t| PID: %pid - %msg'
+    }
+  }, 'app');
+
+var cookieSessionProps = {
+  name: 'session',
+  keys: ['split4ever', 'split4ever, ever'],
+  cookie: {
+    maxAge : 30*24*60*60*1000
+  }
+};
+var bodyParserProps = { extended: true, limit: '10240kb' } ;
+
+//custom modules
+var custom = require('./custom.js');
+var items = require('./items/route.js');
+//var images = require('./images');
+//var categories = require('./categories');
+//var subcategories = require('./subcategories');
+
+var app = express();
+
+app.use(cookieSession(cookieSessionProps));
+app.use(cookieParser());
 app.use(bodyParser.json()); // for parsing application/json
-app.use(bodyParser.urlencoded({ extended: true, limit: '10240kb' })); // for parsing application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded(bodyParserProps)); // for parsing application/x-www-form-urlencoded
 app.use(multer()); // for parsing multipart/form-data
+app.use(methodOverride());
 
+app.set('port', process.env.PORT || PORT);
+
+/*
 var options = {
   dotfiles: 'ignore',
   etag: false,
@@ -18,268 +64,22 @@ var options = {
   //index: false,
   redirect: false
 };
-app.set('port', process.env.PORT || 3000);
 
 if(custom.areWeOnDocker())
 	app.use(express.static('ui', options));
 else
 	app.use(express.static('dist/ui', options));
+*/
 
-
-app.get('/api/items', 
-	function(req,res){
-		
-		console.log('@get/api/items');
-		var callback = {
-			ok:function(o){
-				console.log('ok - got ' + o.length + ' items');
-				res.status(200).send(o);
-				res.end();
-			},
-			nok: function(o){
-				console.error(err);
-				res.status(400);
-				res.end();
-			}
-		};
-		model.getAll(callback);
-		console.log('get/api/items@');
-	}
-);
-
-app.get('/api/categories', 
-	function(req,res){
-		
-		console.log('@get/api/categories');
-		var callback = {
-			ok:function(o){
-				console.log('ok - got ' + o.length + ' categories');
-				res.status(200).send(o);
-				res.end();
-			},
-			nok: function(o){
-				console.error(err);
-				res.status(400);
-				res.end();
-			}
-		};
-		model.getCollection('categories', callback);
-		console.log('get/api/categories@');
-	}
-);
-
-app.get('/api/subCategories', 
-	function(req,res){
-		
-		console.log('@get/api/subCategories');
-		var callback = {
-			ok:function(o){
-				console.log('ok - got ' + o.length + ' subCategories');
-				res.status(200).send(o);
-				res.end();
-			},
-			nok: function(o){
-				console.error(err);
-				res.status(400);
-				res.end();
-			}
-		};
-		model.getCollection('subCategories', callback);
-		console.log('get/api/subCategories@');
-	}
-);
-
-app.get('/api/item/:id', 
-	function(req,res){
-		console.log('@get/api/item');
-		console.log('req param id is:' + util.inspect(req.params.id));
-		var id = req.params.id;
-		custom.log('id: ' + id);
-		var callback = {
-			ok:function(o){
-				console.log('ok - got item with id: ' + id);
-				//console.log('ok: ' + util.inspect(o));
-				//res.writeHead(200, {'Content-Type': 'text/plain'});
-				res.status(200).send(o);
-				res.end();
-			},
-			nok: function(o){
-				console.error(err);
-				res.status(400);
-				res.end();
-			}
-		};
-		//console.log(req.body);
-		model.get(id, callback);
-	}
-);
-
-app.get('/api/image/:id', 
-	function(req,res){
-		console.log('@get/api/image');
-		console.log('req param id is:' + util.inspect(req.params.id));
-		var id = req.params.id;
-		custom.log('id: ' + id);
-		var callback = {
-			ok:function(o){
-				console.log('ok - got image with id: ' + id);
-				//console.log('ok: ' + util.inspect(o));
-				//res.writeHead(200, {'Content-Type': 'text/plain'});
-				res.status(200).send(o);
-				res.end();
-			},
-			nok: function(o){
-				console.error(err);
-				res.status(400);
-				res.end();
-			}
-		};
-		//console.log(req.body);
-		model.getCollectionMember('images', id, callback);
-	}
-);
-
-app.post('/api/image', 
-	function(req,res){
-		console.log('@post/api/image');
-
-		var callback = {
-			ok:function(id){
-				console.log('post/api/image ok: ' + id);
-
-				res.status(200).send({'result': id});
-				res.end();
-			},
-			nok: function(err){
-				console.error(err);	
-				res.status(400);
-				res.end();
-			}
-		};
-
-		model.post2Collection('images', req.body, callback);
-		
-	}
-
-);
-
-app.post('/api/images', 
-	function(req,res){
-		console.log('@post/api/images');
-
-		var callback = {
-			ok:function(ids){
-				console.log('post/api/images ok');
-				res.status(200).send({'result': ids});
-				res.end();
-			},
-			nok: function(err){
-				console.error(err);	
-				res.status(400);
-				res.end();
-			}
-		};
-
-		model.postMultiple2Collection('images', req.body, callback);
-		
-	}
-
-);
-
-app.post('/api/item', 
-	function(req,res){
-		console.log('@post/api/item');
-
-		var callback = {
-			ok:function(id){
-				console.log('post/api/item ok: ' + id);
-
-				res.status(200).send({'result': id});
-				res.end();
-			},
-			nok: function(err){
-				console.error(err);	
-				res.status(400);
-				res.end();
-			}
-		};
-		//console.log(req.body);
-		model.post(req.body, callback);
-		
-	}
-);
-
-
-
-app.post('/api/categories', 
-	function(req,res){
-		console.log('@post/api/categories');
-
-		var callback = {
-			ok:function(id){
-				console.log('post/api/categories ok: ' + id);
-
-				res.status(200).send({'result': id});
-				res.end();
-			},
-			nok: function(err){
-				console.error(err);	
-				res.status(400);
-				res.end();
-			}
-		};
-
-		model.post2Collection('categories', req.body, callback);
-		
-	}
-);
-
-app.post('/api/subCategories', 
-	function(req,res){
-		console.log('@post/api/subCategories');
-
-		var callback = {
-			ok:function(id){
-				console.log('post/api/subCategories ok: ' + id);
-
-				res.status(200).send({'result': id});
-				res.end();
-			},
-			nok: function(err){
-				console.error(err);	
-				res.status(400);
-				res.end();
-			}
-		};
-
-		model.post2Collection('subCategories', req.body, callback);
-		
-	}
-);
-
-app.delete('/api/item/:id', 
-	function(req,res){
-		console.log('@delete/api/item');
-		var id = req.params.id;
-		custom.log('id: ' + id);
-		var callback = {
-			ok:function(o){
-				console.log('ok - deleted item with id: ' + id);
-				res.status(200).send({'result': id});
-				res.end();
-			},
-			nok: function(err){
-				console.error(err);	
-				res.status(400);
-				res.end();
-			}
-		};
-		model.del(id, callback);
-	}
-);
-
+app.use('/api/items', items);
+/*
+app.use('/api/images', images);
+app.use('/api/categories', categories);
+app.use('/api/subcategories', subcategories);
+*/
 // custom 404 page
 app.use(function(req, res){
+	logger.info(util.format('reached 404: %s', JSON.stringify(req)));
 	res.type('text/plain');
 	res.status(404);
 	res.send('404 - Not Found');
@@ -287,18 +87,16 @@ app.use(function(req, res){
 
 // custom 500 page
 app.use(function(err, req, res, next){
-	console.error(err.stack);
+	logger.error(util.format('reached 500: %s', err.stack));
 	res.type('text/plain');
 	res.status(500);
 	res.send('500 - Server Error');
 });
 
 var server = app.listen(app.get('port'), function () {
-
   var host = server.address().address;
   var port = server.address().port;
-
-  console.log('Example app listening at http://%s:%s', host, port);
+  logger.info(util.format('split4ever listening at http://%s:%s', host, port));
 
 });
 

@@ -30,6 +30,8 @@ var vwp = (function () {
 		'itemformwidget': new ItemFormWidget.module("itemformwidget"),
 		'itemformevents': new ItemFormEvents.module("itemformevents"),
 		'itemformloader': new ItemFormLoader.module("itemformloader"),
+		'categorycache': new CategoryCache.module("categorycache"),
+		'subcategorycache': new SubCategoryCache.module("subcategorycache"),
 		/*
 		
 		,'wait4me': new Wait4Me.module("wait4me")

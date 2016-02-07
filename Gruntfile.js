@@ -1,7 +1,16 @@
 module.exports = function(grunt) {
 	// Project configuration.
 	grunt.initConfig({
-        concurrent: {
+        cafemocha: {
+            all: { 
+                src: 'qa/*-*Test.js', 
+                options: { 
+                    ui: 'tdd' , 
+                    reporter: 'nyan',
+                }, 
+            }
+        }
+        ,concurrent: {
           dev: {
             tasks: ['nodemon', 'watch'],
             options: {
@@ -10,7 +19,7 @@ module.exports = function(grunt) {
           }
         },
         clean: {
-            js:'dist/**/*'
+            js: [ 'dist/backend', 'dist/ui' ]
         },
         nodemon: {
           dev: {
@@ -77,7 +86,7 @@ module.exports = function(grunt) {
             files: [
               // includes files within path
               {flatten: true, expand: true, src: ['src/ui/index.html'], dest: 'dist/ui/'},
-              {flatten: true, expand: true, src: ['src/backend/**/*.js'], dest: 'dist/backend/'},
+              { expand: true, cwd: 'src/backend/',  src: ['**'], dest: 'dist/backend/'},
               {flatten: true, expand: true, src: ['src/ui/img/*'], dest: 'dist/ui/img/'}
             ],
           }
@@ -109,8 +118,9 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-nodemon');
     grunt.loadNpmTasks('grunt-concurrent');
+    grunt.loadNpmTasks('grunt-cafe-mocha');
 	// Default task(s).
 	grunt.registerTask('default', ['concat', 'copy', 'watch', 
-        'jshint', 'clean']);
+        'jshint', 'clean', 'cafemocha', 'nodemon' ]);
 
 };
