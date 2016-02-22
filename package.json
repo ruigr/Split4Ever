@@ -4,7 +4,7 @@
   "description": "vwparts web app - frontend backend",
   "main": "dist/backend/index.js",
   "scripts": {
-    install: "grunt clean concat copy",
+    "install": "grunt clean concat copy",
     "test": "mocha -u tdd -R spec qa/*-*Test.js",
     "start": "node dist/backend/index.js"
   },
