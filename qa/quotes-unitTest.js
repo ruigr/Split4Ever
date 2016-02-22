@@ -10,128 +10,106 @@ var logger = custom.createLogger('tests');
 
 describe('model test - items', function() {
 
+	var TEST_COLLECTION = 'itemstest';
 
+	var cleanup = function(doneFunc){
+		var doneF = doneFunc;
+		var f = function(err,o){
+			if(err){
+    	 		logger.error(util.format('...could not drop test collection: %s', err));
+    	 		logger.info('-----------------------------------------');	
+				doneF();
+    	 	}
+    	 	else{
+    	 		logger.info(util.format('...dropped collection %s.', TEST_COLLECTION));
+    	 		logger.info('-----------------------------------------');
+				doneF();
+    	 	}
+		};
+		return {f: f};
+	};
 
-	 before(function(done) {
+	before(function(done) {
 	    // runs before all tests in this block
-	    var callback = function(){
-			var ok = function(){
-				done();	
-			};
-			var nok = function(){
-				throw 'cannot connect to db';	
-				done();
-			};
-			return { ok: ok, nok: nok };
-		}();
-	    model.init(['items_test'], callback);
-	 });
+	    logger.info('-------------- before tests --------------');
+	    var callback = cleanup(done);
+	    model.delCollection(TEST_COLLECTION, callback.f);
+	});
 
 	after(function(done) {
-    	 var callback = function(){
-			var ok = function(){
-				done();	
-			};
-			var nok = function(){
-				throw 'cannot drop collection';	
-				done();
-			};
-			return { ok: ok, nok: nok };
-		}();
-		logger.info(util.format('dropping collection %s', 'items_test'));
-	    model.delCollection('items_test', callback);
+		logger.info('-------------- after tests ---------------');
+		// runs after all tests in this block
+    	 var callback = cleanup(done);
+	    model.delCollection(TEST_COLLECTION, callback.f);
   	});
 
-/*	 beforeEach(function(done) {
-    	// runs before each test in this block
-    	var callback = function(){
-			var ok = function(o){
-				done();	
-			};
-			var nok = function(err){
-				console.log(err);	
-				done();
-			};
-			return { ok: ok, nok: nok };
-		}();
-		model.delAll('items_test', callback);
-  	});*/
-
 	describe('#getAll()', function(){
-	    it('should return an array of 0 elements for collection is empty', function(done){
-	    	var callback = function(){
-				var ok = function(o){
-					assert.typeOf(o, 'array');
-					assert.lengthOf(o,0);
-					done();	
+	    it('should return an array of 0 elements for collection is empty', 
+	    	function(done){
+		    	var callback = function(err, o){
+		    		if(err){
+		    			logger.error(err);	
+						done();
+		    		}
+		    		else {
+						assert.typeOf(o, 'array');
+						assert.lengthOf(o,0);
+						done();
+		    		}
 				};
-				var nok = function(err){
-					console.log(err);	
-					done();
-				};
-				return { ok: ok, nok: nok };
-			}();
-
-			model.getAll('items_test', callback);
+			model.getAll(TEST_COLLECTION, callback);
 		});
 	});
 
 	describe('#post()', function(){
 
 		var item = custom.createDummyItem(true);
-
 	    it('should return a new Id when we are inserting in an empty collection', function(done){
-	    	var callback = function(){
-				var ok = function(o){
-					logger.info(util.format('ok: ', JSON.stringify(o)));
-					expect(null != o);
-					item._id = o;
-					done();	
-				};
-				var nok = function(err){
-					console.log(err);	
+	    	var callback = function(err, objId){
+	    		if(err){
+	    			console.log(err);	
 					done();
-				};
-				return { ok: ok, nok: nok };
-			}();
-			model.post('items_test', item, callback);
+	    		}
+	    		else {
+	    			logger.info(util.format('ok: ', JSON.stringify(objId)));
+					expect(null != objId);
+					item._id = objId;
+					done();
+	    		}
+			};
+			model.post(TEST_COLLECTION, item, callback);
 		});
 
 		it('should return the same Id when we are inserting the same object', function(done){
-		
-	    	var callback = function(){
-				var ok = function(o){
-					logger.info(util.format('ok: ', JSON.stringify(o)));
-					assert.equal(item._id, o);
-					done();	
-				};
-				var nok = function(err){
-					console.log(err);	
+	    	var callback = function(err, objId){
+	    		if(err){
+	    			console.log(err);	
 					done();
-				};
-				return { ok: ok, nok: nok };
-			}();
-			
-			model.post('items_test', item, callback);
-
+	    		}
+	    		else {
+	    			logger.info(util.format('ok: ', JSON.stringify(objId)));
+					assert.equal(item._id, objId);
+					done();
+	    		}
+			};
+			model.post(TEST_COLLECTION, item, callback);
 
 		});
 
 		 it('should return an array of 1 element after one insert and one update', function(done){
-	    	var callback = function(){
-				var ok = function(o){
-					logger.info(util.format('ok: ', JSON.stringify(o)));
-					assert.typeOf(o, 'array');
-					assert.lengthOf(o,1);
-					done();	
-				};
-				var nok = function(err){
-					console.log(err);	
+	    	var callback = function(err, arr){
+	    		if(err) {
+	    			logger.error(err);	
 					done();
-				};
-				return { ok: ok, nok: nok };
-			}();
-			model.getAll('items_test', callback);
+	    		}
+	    		else {
+	    			logger.info(util.format('ok: ', JSON.stringify(arr)));
+					assert.typeOf(arr, 'array');
+					assert.lengthOf(arr,1);
+					done();
+	    		}
+			};
+			model.getAll(TEST_COLLECTION, callback);
 		});
 	});
 
