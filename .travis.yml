@@ -2,6 +2,8 @@ language: node_js
 node_js:
   - "4.1"
   - "0.11"
-before_install: npm install -g grunt-cli
+before_install: 
+  - npm install -g grunt-cli
+  - sudo apt-get install -qq mongodb-server
 install: npm install
 before_script: grunt clean concat copy
