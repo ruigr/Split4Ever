@@ -6,11 +6,14 @@ var model = require('../dist/backend/model.js');
 var custom = require('../dist/backend/custom.js');
 var logger = custom.createLogger('tests');
 
-
+var TEST_COLLECTION = 'itemstest';
+var createTestSubject = function(){
+	 return custom.createDummyItem(true);
+}
 
 describe('model test - items', function() {
 
-	var TEST_COLLECTION = 'itemstest';
+	var item = createTestSubject();
 
 	var cleanup = function(doneFunc){
 		var doneF = doneFunc;
@@ -63,7 +66,7 @@ describe('model test - items', function() {
 
 	describe('#post()', function(){
 
-		var item = custom.createDummyItem(true);
+		
 	    it('should return a new Id when we are inserting in an empty collection', function(done){
 	    	var callback = function(err, objId){
 	    		if(err){
@@ -96,7 +99,80 @@ describe('model test - items', function() {
 
 		});
 
-		 it('should return an array of 1 element after one insert and one update', function(done){
+		
+	    it('should return a new Id when we are inserting again in an empty collection', function(done){
+	    	var item = createTestSubject();
+	    	var callback = function(err, objId){
+	    		if(err){
+	    			console.log(err);	
+					done();
+	    		}
+	    		else {
+	    			logger.info(util.format('ok: ', JSON.stringify(objId)));
+					expect(null != objId);
+					item._id = objId;
+					done();
+	    		}
+			};
+			model.post(TEST_COLLECTION, item, callback);
+		});
+
+		 it('should return an array of 2 element after two inserts and one update', function(done){
+	    	var callback = function(err, arr){
+	    		if(err) {
+	    			logger.error(err);	
+					done();
+	    		}
+	    		else {
+	    			logger.info(util.format('ok: ', JSON.stringify(arr)));
+					assert.typeOf(arr, 'array');
+					assert.lengthOf(arr,2);
+					done();
+	    		}
+			};
+			model.getAll(TEST_COLLECTION, callback);
+		});
+
+	});
+
+	//get by id
+	describe('#get()', function(){
+	    it('should get one element', 
+	    	function(done){
+		    	var callback = function(err, o){
+		    		if(err){
+		    			logger.error(err);	
+						done();
+		    		}
+		    		else {
+						assert.deepEqual(o, item);
+						done();
+		    		}
+				};
+			model.get(TEST_COLLECTION, item._id, callback);
+		});
+	});	
+
+	//delete
+
+	describe('#del()', function(){
+
+	    it('should delete one element', 
+	    	function(done){
+		    	var callback = function(err, o){
+		    		if(err){
+		    			logger.error(err);	
+						done();
+		    		}
+		    		else {
+						assert.equal(o, 1);
+						done();
+		    		}
+				};
+			model.del(TEST_COLLECTION, item._id, callback);
+		});
+
+	    it('should return an array of 1 element after two inserts and one update and one delete', function(done){
 	    	var callback = function(err, arr){
 	    		if(err) {
 	    			logger.error(err);	
@@ -111,15 +187,8 @@ describe('model test - items', function() {
 			};
 			model.getAll(TEST_COLLECTION, callback);
 		});
+
 	});
-
-
-
-	//get by id
-
-		
-
-	//delete
 
 });
 

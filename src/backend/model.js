@@ -289,51 +289,166 @@ var Model = (function(){
 			update= true;
 		}
 
-		var postCallback = function(err, r){
+		var postCallback = function(err, col) {
 			if(err) {
+				logger.trace(util.format('@postCallback...err is not null: %s.', err));
 				if(callback)
-					callback(err);
+					callback(err, null);
 			}
 			else {
-				o = r.result;
-				if( o.ok == 1 ){
-				  	logger.info(util.format('inserted %d element(s) in collection %s', o.n, collectionName));
-			  		if(callback)
-						callback(err, id);
+				if(! update ) {
+					logger.debug('going to insert');
+					col.insertOne(o, function(err, r){
+						if(err) {
+							if(callback)
+								callback(err);
+						}
+						else {
+							o = r.result;
+							if( o.ok == 1 ){
+							  	logger.info(util.format('inserted %d element(s) in collection %s', o.n, collectionName));
+						  		if(callback)
+									callback(err, id);
+							}
+						  	else {
+						  		logger.info(util.format('result %d when inserting elements in collection %s', o.ok, collectionName));
+						  		if(callback)
+						  			callback(new Error('insert was not ok'));
+						  	}
+						}
+					} );
 				}
-			  	else {
-			  		logger.info(util.format('result %d when inserting elements in collection %s', o.ok, collectionName));
-			  		if(callback)
-			  			callback(new Error('insert was not ok'));
-			  	}
+				else {			
+					logger.debug('going to replace');
+					col.replaceOne( {'_id' : o._id}, o, function(err, r){
+						if(err) {
+							if(callback)
+								callback(err);
+						}
+						else {
+							o = r.result;
+							if( o.ok == 1 ){
+							  	logger.info(util.format('replaced %d element(s) in collection %s', o.n, collectionName));
+						  		if(callback)
+									callback(err, id);
+							}
+						  	else {
+						  		logger.info(util.format('result %d when replacing elements in collection %s', o.ok, collectionName));
+						  		if(callback)
+						  			callback(new Error('replace was not ok'));
+						  	}
+						}
+					}  );
+				}
+
+				
 			}
 		};
 
-		if(! update ) {
-			logger.debug('going to insert');
-			collectionMap[collectionName].insertOne(o, postCallback );
+		if(collectionMap[collectionName]){
+			postCallback(null,collectionMap[collectionName]);
 		}
-		else {			
-			logger.debug('going to replace');
-			collectionMap[collectionName].replaceOne(
-				{'_id' : o._id}, o, postCallback );
-		}
+		else 
+			getCollection(collectionName, postCallback);
 
 		logger.trace('Model.post@');
 	};
 
+	var del = function(collectionName, id, callback) {
+
+		logger.trace('@Model.del');
+
+		var delCallback = function(err, col) {
+			if(err) {
+				logger.trace(util.format('@postCallback...err is not null: %s.', err));
+				if(callback)
+					callback(err, null);
+			}
+			else {
+				col.deleteOne({'_id' : id}, function(err, r){
+					if(err) {
+						if(callback)
+							callback(err);
+					}
+					else {
+						o = r.result;
+						if( o.ok == 1 ){
+						  	logger.info(util.format('deleted %d element(s) in collection %s', o.n, collectionName));
+					  		if(callback)
+								callback(err, o.n);
+						}
+					  	else {
+					  		logger.info(util.format('result %d when deleting element in collection %s', o.ok, collectionName));
+					  		if(callback)
+					  			callback(new Error('delete was not ok'));
+					  	}
+					}
+				} );
+			}
+		};
+
+		if(collectionMap[collectionName]){
+			delCallback(null,collectionMap[collectionName]);
+		}
+		else 
+			getCollection(collectionName, delCallback);
+
+		logger.trace('Model.del@');
+	};
+
+	var get = function(collectionName, id, callback) {
+
+		logger.trace('@Model.get');
+
+		var getCallback = function(err, col) {
+			if(err) {
+				logger.trace(util.format('@getCallback...err is not null: %s.', err));
+				if(callback)
+					callback(err, null);
+			}
+			else {
+				col.findOne({'_id' : id}, function(err, r){
+					if(err) {
+						if(callback)
+							callback(err);
+					}
+					else {
+						if(r){
+						  	logger.info(util.format('got %s element in collection %s', JSON.stringify(r), collectionName));
+					  		if(callback)
+								callback(null, r);
+						}
+					  	else {
+					  		logger.info(util.format('no result when getting element in collection %s', collectionName));
+					  		if(callback)
+					  			callback(new Error('get was not ok'));
+					  	}
+					}
+				} );
+			}
+		};
+
+		if(collectionMap[collectionName]){
+			getCallback(null,collectionMap[collectionName]);
+		}
+		else 
+			getCollection(collectionName, getCallback);
+
+		logger.trace('Model.get@');
+	};
 
 	return { 
 		getAll: getAll
 		, delAll: delAll
 		, post: post
 		, delCollection: delCollection
-
+		, del: del
+		, get: get
 		/*
 		,getCollection: getCollection
 		,post2Collection: post2Collection
-		,get: get
-		,del: del*/
+		, get: get
+		*/
 	}; 
 
 }());
