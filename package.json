@@ -1,7 +1,7 @@
 {
-  "name": "vwparts",
+  "name": "split4ever",
   "version": "1.0.0",
-  "description": "vwparts web app - frontend backend",
+  "description": "split4ever web app - frontend backend",
   "main": "dist/backend/index.js",
   "scripts": {
     "test": "grunt cafemocha",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/vwparts/main"
+    "url": "https://github.com/split4ever/main"
   },
   "engines": {
     "node": "0.10.28"
@@ -17,9 +17,9 @@
   "author": "jtv & rg",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/vwparts/main/issues"
+    "url": "https://github.com/split4ever/main/issues"
   },
-  "homepage": "https://github.com/vwparts/main",
+  "homepage": "https://github.com/split4ever/main",
   "dependencies": {
     "express": "^4.12.4",
     "util": "^0.10.3",

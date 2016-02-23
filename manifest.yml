@@ -1,6 +1,6 @@
 ---
 applications:
-- name: vwparts
+- name: split4ever
   buildpack: sdk-for-nodejs
   memory: 1024M
   instances: 1
