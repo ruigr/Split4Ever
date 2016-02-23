@@ -275,18 +275,31 @@ var Model = (function(){
 	var post = function(collectionName, o, callback) {
 
 		logger.trace('@Model.post');
-		var id = null;
+		
+		var id = new ObjectID();
+		var update= false;
 
-		var postCallback = function(err, o){
+		if(! o._id ) {
+			id = new ObjectID();
+			o._id = id;
+		}
+		else {			
+			id = new ObjectID(o._id);
+			o._id = id;
+			update= true;
+		}
+
+		var postCallback = function(err, r){
 			if(err) {
 				if(callback)
 					callback(err);
 			}
 			else {
+				o = r.result;
 				if( o.ok == 1 ){
-				  	logger.info(util.format('inserted %d elements in collection %s', o.n, collectionName));
+				  	logger.info(util.format('inserted %d element(s) in collection %s', o.n, collectionName));
 			  		if(callback)
-						callback(err, objId);
+						callback(err, id);
 				}
 			  	else {
 			  		logger.info(util.format('result %d when inserting elements in collection %s', o.ok, collectionName));
@@ -296,14 +309,12 @@ var Model = (function(){
 			}
 		};
 
-		if(! o._id ) {
-			id = new ObjectID();
-			o._id = id;
+		if(! update ) {
+			logger.debug('going to insert');
 			collectionMap[collectionName].insertOne(o, postCallback );
 		}
 		else {			
-			id = new ObjectID(o._id);
-			o._id = id;
+			logger.debug('going to replace');
 			collectionMap[collectionName].replaceOne(
 				{'_id' : o._id}, o, postCallback );
 		}
