@@ -96,9 +96,6 @@ var Custom = function() {
 	    return o;
 	};
 
-	
-
-
 	var createDummyItem = function(shouldItBeRandom){
 		var o = {
 				_id: null,

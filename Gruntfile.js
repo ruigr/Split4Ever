@@ -60,25 +60,25 @@ module.exports = function(grunt) {
 			dist: {
         			src: [ 
             				'src/ui/js/libs/*.js' 
-                            ,'src/ui/js/basemodules/*.js'
-                            ,'src/ui/js/uimodules/*.js'
-                            ,'src/ui/js/**/*.js'
+                            ,'src/ui/js/base/*.js'
+                            ,'src/ui/js/common/*.js'
+                            //,'src/ui/js/**/*.js'
             				,'src/ui/js/*.js'
         			],
-        			dest: 'dist/ui/js/vwp.js'
+        			dest: 'dist/ui/js/main.js'
     			},
 			css: {
         			src: [
                         'src/ui/css/bootstrap.css',
             			'src/ui/css/custom.css' 
         			],
-        			dest: 'dist/ui/css/vwp.css'
+        			dest: 'dist/ui/css/main.css'
     			}
 		},
 		uglify: {
     			build: {
-        			src: 'dist/ui/js/vwp.js',
-        			dest: 'dist/ui/js/vwp.min.js'
+        			src: 'dist/ui/js/main.js',
+        			dest: 'dist/ui/js/main.min.js'
     			}
 		},
         copy: {
