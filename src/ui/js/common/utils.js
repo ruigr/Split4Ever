@@ -64,7 +64,7 @@ Utils.prototype.createElement = function(elementType, classesArray, attributesAr
 
 	var element = document.createElement(elementType);
 
-	if(classesArray) {
+	if(null != classesArray) {
 		classesArray.forEach(
 			function(item){
 				element.classList.add(item);
@@ -72,7 +72,7 @@ Utils.prototype.createElement = function(elementType, classesArray, attributesAr
 		);
 	}
 	
-	if(attributesArray){
+	if(null != attributesArray){
 		attributesArray.forEach(
 			function(item){
 				element.setAttribute(item.name, item.value);

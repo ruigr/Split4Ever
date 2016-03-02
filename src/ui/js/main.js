@@ -18,24 +18,28 @@ var classForName = function(clazz){
 var APP = new function(){
 
 	var running = false;
-	var modulesConf = { requires: [ 'Utils', 'Constants', 'PubSub', 'UiShell' ] };
-	
+	var appModulesConf = { requires: [ 'Utils', 'Constants', 'PubSub', 'UiShell' ] };
+	var bootContext = { bootstrapModules: ['uishell'] };
 	var app = new App('app');
-	app.configure(modulesConf);
-	app.init();
-	app.addContext({ bootstrapModule: 'uishell' });
+	app.addConfiguration(appModulesConf);
+	app.addContext(bootContext);
 
-	var run = function(context){
+	var run = function(ctx){
 		if(running)
 			throw new Error("!!! Already running !!!");
-		app.addContext(context);
-		app.run();
-		running = true;
+		app.init();
+		app.addContext(ctx);
+		app.start();
+		running = true;	
+	};
+
+	var findModule = function(name){
+		return app.findModule(name);
 	};
 
 	return {
 		run: run ,
-		getModules : app.getLoadedModules
+		findModule : findModule
 	};
 
 }();

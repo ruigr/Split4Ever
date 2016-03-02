@@ -1,89 +1,102 @@
 var App = function(name){
-
 	Module.call(this, name);
-	//this.configMap.requires= modClassNameArray; //string array with required mdule names
-
-	//private function to load the modules
-	this.loadModules = function(){
-		if(0 == this.configMap.requires.length )
-			this.throw('!!! must add module class names to the requires array !!!');
-
-		for(i = 0; i < this.configMap.requires.length; i++){
-			var modClass = this.configMap.requires[i];
-			var modName = modClass.toLowerCase();
-
-			if(!this.configMap.modules.hasOwnProperty(modName)){
-				var classDefinition = classForName(modClass);
-				var module = new classDefinition(modName);
-				this.configMap.modules[modName] = module;
-				console.log('created instance of module ' + modClass);
-			}
-		}
-	};
-
-	this.initModules = function(){
-		//set up modules dependencies
-		for(modName in this.configMap.modules){
-			if(this.configMap.modules.hasOwnProperty(modName)){
-				var module = this.configMap.modules[modName];
-				//for every module
-				var confMap = {
-					modules:{}
-				};
-				var dependencies = this.findLoadedModules(module.configMap.requires);
-				for(i = 0; i < module.configMap.requires.length; i++){
-					var name =  module.configMap.requires[i];
-					var mod = dependencies[i];
-					confMap.modules[name] = mod;
-					console.log('collecting module dependency ' + name + ' to module ' + module.getName());
-				}
-				module.configure(confMap);
-				console.log('configured dependencies in module ' + module.name);
-				module.init();
-				console.log('called init on module ' + module.name);
-				
-			}
-		}
-	};
-	
+	this.config.requires = ['Utils'];
 };
 
 App.prototype = Object.create(Module.prototype);
 App.prototype.constructor = App;
 
-App.prototype.findLoadedModules = function(arrStr){
-	var result = [];
-	for(i = 0; i < arrStr.length; i++){
-		var modName = arrStr[i];
-		this.configMap.modules.hasOwnProperty(modName)
-			result.push(this.configMap.modules[modName]);
+App.prototype.init = function(){
+	this.logger.in('init');
+	if(null != this.config.requires ){
+
+		for(i = 0; i < this.config.requires.length; i++){
+			var requirement = this.config.requires[i];
+			var instance = null;
+			//load the module from the class
+			var classDefinition = classForName(requirement);
+			if(null != classDefinition){
+				instance = new classDefinition(requirement.toLowerCase());
+				this.logger.debug('creating module instance '+ requirement + " from class");
+				this.config.modules[requirement.toLowerCase()] = instance;
+			}
+			else
+				this.throw('!!! could not find module:' + requirement + ' !!!');
+		}
 	}
+	
+	for( modName in this.config.modules){
+		if(this.config.modules.hasOwnProperty(modName)){
+			var module = this.config.modules[modName];
+			module.init();
+			this.logger.debug('called init on module instance '+ modName);
+		}
+	}
+	this.logger.out('init');
+};
+
+App.prototype.findModule = function(modName){
+	var result = null;
+	var moduleName = modName.toLowerCase();
+	if(this.config.modules.hasOwnProperty(moduleName))
+		result = this.config.modules[moduleName];
 	return result;
 };
 
-App.prototype.getLoadedModules = function(){
-	// TODO return copy not the actual object
-	return this.configMap.modules;
+
+App.prototype.createDollarMap = function(){
+	this.logger.in('createDollarMap');
+	var container = $( this.context.container );
+	this.context.dollarMap = {
+		$header : container.find('#header'),
+		$body : container.find('#body'),
+		$footer : container.find('#footer')
+	};
+	this.logger.out('createDollarMap');
 };
 
-App.prototype.init = function(){
-	this.loadModules();
-	this.initModules();
+App.prototype.createScaffold = function(){
+
+	this.logger.in('createScaffold');
+
+	if( null == this.context.container )
+		this.throw('!!! we need a container to load the bootstrap modules !!!');
+
+	var utils = this.config.modules['utils'];
+	var container = $( this.context.container );
+
+	var headerDiv = utils.createElement('div', null, [ { name: 'id', value: 'header' } ]);
+	var bodyDiv = utils.createElement('div', null, [ { name: 'id', value: 'body' } ]);
+	var footerDiv = utils.createElement('div', null, [ { name: 'id', value: 'footer' } ]);
+
+	container.append(headerDiv);
+	container.append(bodyDiv);
+	container.append(footerDiv);
+
+	this.logger.out('createScaffold');
 };
 
-App.prototype.run = function(){
+App.prototype.start = function(){
+	this.logger.in('start');
+	
+	this.createScaffold();
+	this.createDollarMap();
 
-	if( null == this.stateMap.context.bootstrapModule )
-		this.throw('!!! we need a botstrap module !!!');
+	if( null == this.context.bootstrapModules 
+		|| (!Array.isArray(this.context.bootstrapModules)) 
+		|| (1 > this.context.bootstrapModules.length) )
+		this.throw('!!! we need an array of botstrap modules !!!');
 
-	var bootstrapMod = this.configMap.modules[this.stateMap.context.bootstrapModule];
+	for(i=0; i < this.context.bootstrapModules.length; i++){
+		var modName = this.context.bootstrapModules[i];
+		var bootstrapMod = this.config.modules[modName];
+		if( null == bootstrapMod)
+			this.throw('!!! botstrap module not previously loaded: ' + modName + '!!!');
 
-	if( null == bootstrapMod)
-		this.throw('!!! botstrap module not previously loaded !!!');
-
-	if( null == this.stateMap.context.container )
-		this.throw('!!! we need a container to load the bootstrap module !!!');
-
-	bootstrapMod.addContext({ container: this.stateMap.context.container });
-	bootstrapMod.run();
+		// TODO asynch
+		bootstrapMod.addContext({ container: this.context.dollarMap });
+		bootstrapMod.start();
+		this.logger.debug('called run on module instance '+ modName);
+	}
+	this.logger.out('start');
 };
