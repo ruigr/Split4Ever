@@ -6,18 +6,16 @@ var Constants = function(name){
 Constants.prototype = Object.create(Module.prototype);
 Constants.prototype.constructor = Constants;
 
-Constants.prototype.constant = {
-		nameMaxLength: 128,
-		amountMax: 999999,
-		notesMaxLength: 1024,
-		newCategoryToken: '*** new category ***',
-		newSubCategoryToken: '*** new sub category ***',
-		noCategoryToken: '',
-		noSubCategoryToken: '',
-		notAvailableToken: 'not available',
-		allClauseToken: '*',
-		newSubCategoryPrompt: 'please provide a new sub category: '
-		, newCategoryPrompt: 'please provide a new category: '
-		, delFilesPrompt: 'You are sure you want to delete files?'
-		
-};
+Constants.prototype.nameMaxLength = 128;
+Constants.prototype.amountMax = 999999;
+Constants.prototype.notesMaxLength = 1024;
+Constants.prototype.newCategoryToken = '*** new category ***';
+Constants.prototype.newSubCategoryToken = '*** new sub category ***';
+Constants.prototype.noCategoryToken = '';
+Constants.prototype.noSubCategoryToken = '';
+Constants.prototype.notAvailableToken = 'not available';
+Constants.prototype.allClauseToken = '*';
+Constants.prototype.newSubCategoryPrompt = 'please provide a new sub category: ';
+Constants.prototype.newCategoryPrompt = 'please provide a new category: ';
+Constants.prototype.delFilesPrompt = 'You are sure you want to delete files?';
+
