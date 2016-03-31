@@ -2,5 +2,5 @@
 
 webapp for all things split4ever
 
-travis CI page -> https://travis-ci.org/vwparts/main
+travis CI page -> https://travis-ci.org/split4ever/main
 
