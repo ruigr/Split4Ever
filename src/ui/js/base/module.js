@@ -67,48 +67,46 @@ var Module = function(name){
 
 }
 
+/*
+	sets up modules
+	register to events on pubsub
+*/
 Module.prototype.init = function(){
 	this.logger.in('init');
 	if(null != this.config.requires ){
 
 		for(i = 0; i < this.config.requires.length; i++){
 			var requirement = this.config.requires[i];
+			var moduleName = requirement.toLowerCase();
 			var instance = null;
 			//try to find the module in the global APP object
 			instance = APP.findModule(requirement);
 			if(null != instance){
-				this.config.modules[requirement.toLowerCase()] = instance;
-				this.logger.debug('got module instance '+ requirement + " from APP global object");
+				this.config.modules[moduleName] = instance;
+				this.logger.debug('got module instance '+ moduleName + " from APP global object");
 			}
 			else {
 				// if not provided by APP then lets create the module
 				var classDefinition = classForName(requirement);
 				if(null != classDefinition){
-					instance = new classDefinition(requirement.toLowerCase());
-					this.logger.debug('creating module instance '+ requirement + " from class");
+					instance = new classDefinition(moduleName);
+					this.logger.debug('creating module instance '+ moduleName + " from class");
+					instance.init();
+					this.logger.debug('called init on module instance '+ moduleName);
 				}
 				else
 					this.throw('!!! could not find module:' + requirement + ' !!!');
 			}
 
-			this.config.modules[requirement.toLowerCase()] = instance;
-		}
+			this.config.modules[moduleName] = instance;
 
-		for( modName in this.config.modules){
-			if(this.config.modules.hasOwnProperty(modName)){
-				var module = this.config.modules[modName];
-				module.init();
-				this.logger.debug('called init on module instance '+ modName);
-
-				if(modName == 'pubsub' && 0 < this.config.events.lenght ){
-					//register events if necessary
-					var pubsub = this.config.modules[modName];
-					pubsub.subscribe(this.config.events, this);
-					this.logger.debug('subscribed for events: ' + this.config.events);
-				}
-
+			if(moduleName == 'pubsub' && 0 < this.config.events.length ){
+				//register events if necessary
+				instance.subscribe(this.config.events, this);
+				this.logger.debug('subscribed for events: ' + this.config.events);
 			}
 		}
+
 	}
 	this.logger.out('init');
 };
@@ -125,6 +123,10 @@ Module.prototype.stop = function(){
 	this.logger.debug(this.name + ".halt is not implemented");
 };
 
+Module.prototype.onEvent = function(event,context){
+	this.logger.debug(this.name + ".onEvent is not implemented");
+};
+
 Module.prototype.getDollarMap = function(){
 	return this.context.dollarMap;
 };
@@ -139,6 +141,18 @@ Module.prototype.getContext = function(context){
 
 Module.prototype.throw = function(msg){
 	throw new Error( "origin: " + this.name + " | msg: " + msg );
+};
+
+Module.prototype.add2DollarMap = function(key, val){
+	this.logger.in('add2DollarMap');
+	Object.defineProperty(this.context.dollarMap, key, { value: val });
+	this.logger.out('add2DollarMap');
+};
+
+Module.prototype.add2Context = function(key, val){
+	this.logger.in('add2Context');
+	Object.defineProperty(this.context, key, { value: val });
+	this.logger.out('add2Context');
 };
 
 Module.prototype.addContext = function(ctxMap){

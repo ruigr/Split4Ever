@@ -4,7 +4,7 @@
  */
 var UiShell = function(name){
 	Module.call(this, name);
-	this.config.requires = ['Utils', 'PubSub' ];
+	this.config.requires = ['Utils', 'PubSub', 'Constants' ];
 	this.config.anchor_schema_map = {};
 	this.context.anchor_map = {};
 };
@@ -12,81 +12,56 @@ var UiShell = function(name){
 UiShell.prototype = Object.create(Module.prototype);
 UiShell.prototype.constructor = UiShell;
 
+UiShell.prototype.start = function(){
+	this.logger.in('start');
 
+	var callback = function(ctx, cfg, lgg) {
 
-
-	/*module.prototype.setEvents = function(){
-		this.config.modules['utils'].logger.enter(this.name, 'setEvents');
-
-		this.config.modules['utils'].logger.info(this.name, 'setting up hashChange events');
-		var hashChangeCallBack = (function(context, config) {
-
-			var context = context;
-			var config = config;
-
-			// Returns copy of stored anchor map; minimizes overhead
-			var copyAnchorMap = function() {
-				return $.extend(true, {}, context.anchor_map);
-			};
-
-			var onChange = function(event) {
-				var anchor_map_previous = copyAnchorMap(); 
-				var anchor_map_proposed;
-				//#!page=profile:uname,wendy|online,today&slider=confirm:text,hello|pretty,false&color=red 
-				//#!body=browse:text,amortece
-				// attempt to parse anchor
-				try {
-					anchor_map_proposed = $.uriAnchor.makeAnchorMap();
-					console.log('proposed anchor: ' + anchor_map_proposed.body);  
-
-				} catch (error) {
-					$.uriAnchor.setAnchor(anchor_map_previous, null, true);
-					return false;
-				}
-				context.anchor_map = anchor_map_proposed;
-				config.modules['utils'].logger.info('onHashChange', 'setting anchor_map: ' + context.anchor_map);
-				//so we have an anchor map, if no body then set body to browse module by default
-				if(null == context.anchor_map.body){
-					$.uriAnchor.setAnchor(
-					{	
-						body : 'browser' ,
-						_body : {searchtext   : ''}
-					});
-					return false;
-				};
-
-				var context = {};
-				context = config.modules['utils'].copyObjProps2Obj(context.anchor_map['_body'], context);
-				context['body']=context.anchor_map.body;
-				context['container']=context.jqueryMap.$body;
-
-				config.modules['pubsub'].publish('onBody', context);
-
+		var onChange = function(event) {
+			var anchor_map_previous = $.extend(true, {}, ctx.anchor_map);
+			var anchor_map_proposed;
+			//#!page=profile:uname,wendy|online,today&slider=confirm:text,hello|pretty,false&color=red 
+			//#!body=browse:text,amortecedores
+			try { // attempt to parse anchor
+				anchor_map_proposed = $.uriAnchor.makeAnchorMap();
+				lgg.debug('proposed anchor: ' + anchor_map_proposed.body);  
+			} catch (error) { // if we can't parse it we take the previous one
+				lgg.error('!!! couldnt parse the anchor: ' + error.toString() + ' !!!');
+				$.uriAnchor.setAnchor(anchor_map_previous, null, true);
+				return false;
+			}
+			ctx.anchor_map = anchor_map_proposed;
+			lgg.debug('...setting anchor_map: ' + JSON.stringify(ctx.anchor_map));
+			//so we have an anchor map, if no body then set body to browser module by default
+			if(null == ctx.anchor_map.body){
+				$.uriAnchor.setAnchor( cfg.modules['constants'].defaultAnchorMap );
 				return false;
 			};
 
-			return {
-				onChange: onChange
-			};
+			// if not we create and broadcast a context obj with the dollarMap 
+			// elements and the body values for whoever might be interested
+			var _ctx = {};
+			_ctx = cfg.modules['utils'].copyObjProps2Obj(ctx.anchor_map['_body'], _ctx);
+			_ctx['body']=ctx.anchor_map.body;
 
-		})( this.context, this.config );
+			//lets first clean body from its ui children as it is going to be re-created
+			ctx.dollarMap.$body.empty();
+			_ctx['dollarMap']= { $body: ctx.dollarMap.$body };
+			cfg.modules['pubsub'].publish('onBody', _ctx);
+			return false;
+		};
+		return {
+			onChange: onChange
+		};
 
+	}( this.context, this.config, this.logger );
 
-			//send event defining header and footer containers, 
-			//header and footer modules should react to this
-		this.config.modules['utils'].logger.info(this.name, 'going to send header and footer definition');
-		var context = {
-			header: this.context.jqueryMap.$header,
-			footer: this.context.jqueryMap.$footer
-		}
-		this.config.modules['pubsub'].publish('onContainerDefinition', context);
+	this.logger.info('triggering initial hashchange');
+	$(window).bind('hashchange', callback.onChange ).trigger('hashchange');
+	$.uriAnchor.makeAnchorMap();
 
-		this.config.modules['utils'].logger.info(this.name, 'triggering initial hashchange');
-		$(window).bind('hashchange', hashChangeCallBack.onChange ).trigger('hashchange');
-		$.uriAnchor.makeAnchorMap();
-
-		this.config.modules['utils'].logger.leave(this.name, 'setEvents');
-	};*/
+	this.logger.out('start');
+};
 
 
 

@@ -22,7 +22,7 @@ var Model = (function(){
 		if(null === connection){
 			
 			var createCallback = function(err, db){
-				if(err)
+				if(null != err)
 					callback(err, null);
 				else {
 					connection = db;
@@ -56,21 +56,21 @@ var Model = (function(){
 	var getCollection = function(collectionName, callback){
 
 		var createCallback = function(err, conn){
-			if(err)
+			if(null != err)
 				callback(err, null);
 			else {
 				conn.createCollection(collectionName, {}, 
 					function(e,c){
-						if(e){
+						if(null != e){
 							logger.trace(util.format('@getCollection#createCallback e is not null %s', e));
-							if(callback)
+							if(null != callback)
 								callback(e, null);
 						}
 						else{
-							logger.trace(util.format('@getCollection#createCallback e not null and c type is: %s', typeof c));
+							logger.trace(util.format('@getCollection#createCallback e is null and c type is: %s', typeof c));
 							collectionMap[collectionName] = c;
 							logger.info('...created collection: ' + collectionName);
-							if(callback)
+							if(null != callback)
 								callback(null, c);
 						}
 						logger.info(util.format('collection map has now %d elements', Object.keys(collectionMap).length));
@@ -80,7 +80,7 @@ var Model = (function(){
 			
 		};
 
-		if(collectionMap[collectionName]){
+		if(null != collectionMap[collectionName]){
 			logger.trace(util.format('@getCollection#createCallback found collection in map and its type is: %s', typeof (collectionMap[collectionName]) ) );
 			callback(null,collectionMap[collectionName]);
 		}
@@ -103,22 +103,22 @@ var Model = (function(){
 			var cback = cb;
 
 			var f = function(err, conn){
-				if(err){
+				if(null != err){
 					logger.trace(util.format('@findCollection#findCallback...err is not null: %s.', err));
-					if(cback)
+					if(null != cback)
 						cback(err, null);
 				}
 				else {
 					conn.collection( colName, { "strict": false },  
 						function(e, c){
-							if(e){
+							if(null != e){
 								logger.trace(util.format('@findCollection#findCallback...e is not null: %s.', e));
-								if(cback)
+								if(null != cback)
 									cback(e, null);
 							}
 							else{
 								logger.trace('@findCollection#findCallback...e is null.');
-								if(cback){
+								if(null != cback){
 									if(null !== c){
 										logger.trace('@findCollection#findCallback...c is not null.');
 										cback(null, { "ok": 1, "obj": c });
@@ -148,18 +148,18 @@ var Model = (function(){
 	var delCollection = function(collectionName, callback){
 
 		var findCallback = function(err, r){
-			if(err){
+			if(null != err){
 				logger.trace(util.format('could not drop collection %s', collectionName));
-				if(callback)
+				if(null != callback)
 					callback(err, null);
 			}
 			else {
 				if( 1 === r.ok ) {
 					var coll = r.obj;
 					coll.drop(function(err, r){
-						if(err){
+						if(null != err){
 							logger.warn(util.format('could not drop collection %s', collectionName));
-							if(callback)
+							if(null != callback)
 								callback(err, null);
 						}
 						else {
@@ -191,9 +191,9 @@ var Model = (function(){
 		var getAllCallback = function(cback){
 			var cb = cback;
 			var f = function(err, collection){
-				if(err){
+				if(null != err){
 					logger.trace(util.format('@getAll#getAllCallback err is not null %s', err));
-					if(cb)
+					if(null != cb)
 						cb(err, null);
 				}
 				else {
@@ -201,15 +201,15 @@ var Model = (function(){
 					var cursor = collection.find();
 					var result = [];
 					cursor.each(function(e, item) {
-						if (e) {
-				  			if(cb)
+						if (null != e) {
+				  			if(null != cb)
 								cb(e, null);
 						}
 						else{
 							if (item != null) 
 					    		result.push(item);
 					    	else {
-					    		if(cb)
+					    		if(null != cb)
 					    			cb(null,result);	
 					    	}
 						}			 
@@ -236,16 +236,16 @@ var Model = (function(){
 		logger.trace('@Model.delAll');
 		
 		var delCallback = function(err, collection){
-			if(err) {
+			if(null != err) {
 				logger.trace(util.format('@delCallback...err is not null: %s.', err));
-				if(callback)
+				if(null != callback)
 					callback(err, null);
 			}
 			else {
 				collection.deleteMany({}, null, function(e, r){
-					if(e){
+					if(null != e){
 						logger.trace(util.format('@delCallback#collection.deleteMany...e is not null: %s.', e));
-						if(callback)
+						if(null != callback)
 							callback(e, null);
 					}	
 					else {
@@ -290,29 +290,29 @@ var Model = (function(){
 		}
 
 		var postCallback = function(err, col) {
-			if(err) {
+			if(null != err) {
 				logger.trace(util.format('@postCallback...err is not null: %s.', err));
-				if(callback)
+				if(null != callback)
 					callback(err, null);
 			}
 			else {
 				if(! update ) {
 					logger.debug('going to insert');
 					col.insertOne(o, function(err, r){
-						if(err) {
-							if(callback)
+						if(null != err) {
+							if(null != callback)
 								callback(err);
 						}
 						else {
 							o = r.result;
 							if( o.ok == 1 ){
 							  	logger.info(util.format('inserted %d element(s) in collection %s', o.n, collectionName));
-						  		if(callback)
+						  		if(null != callback)
 									callback(err, id);
 							}
 						  	else {
 						  		logger.info(util.format('result %d when inserting elements in collection %s', o.ok, collectionName));
-						  		if(callback)
+						  		if(null != callback)
 						  			callback(new Error('insert was not ok'));
 						  	}
 						}
@@ -320,21 +320,24 @@ var Model = (function(){
 				}
 				else {			
 					logger.debug('going to replace');
-					col.replaceOne( {'_id' : o._id}, o, function(err, r){
-						if(err) {
-							if(callback)
+					var query = { _id: id};
+					if("string" == typeof id)
+						query._id =  new ObjectID(id);
+					col.replaceOne( query, o, function(err, r){
+						if(null != err) {
+							if(null != callback)
 								callback(err);
 						}
 						else {
 							o = r.result;
 							if( o.ok == 1 ){
 							  	logger.info(util.format('replaced %d element(s) in collection %s', o.n, collectionName));
-						  		if(callback)
+						  		if(null != callback)
 									callback(err, id);
 							}
 						  	else {
 						  		logger.info(util.format('result %d when replacing elements in collection %s', o.ok, collectionName));
-						  		if(callback)
+						  		if(null != callback)
 						  			callback(new Error('replace was not ok'));
 						  	}
 						}
@@ -359,27 +362,30 @@ var Model = (function(){
 		logger.trace('@Model.del');
 
 		var delCallback = function(err, col) {
-			if(err) {
+			if(null != err) {
 				logger.trace(util.format('@postCallback...err is not null: %s.', err));
-				if(callback)
+				if(null != callback)
 					callback(err, null);
 			}
 			else {
-				col.deleteOne({'_id' : id}, function(err, r){
-					if(err) {
-						if(callback)
+				var query = { _id: id};
+				if("string" == typeof id)
+					query._id =  new ObjectID(id);
+				col.deleteOne(query , function(err, r){
+					if(null != err) {
+						if(null != callback)
 							callback(err);
 					}
 					else {
 						o = r.result;
 						if( o.ok == 1 ){
 						  	logger.info(util.format('deleted %d element(s) in collection %s', o.n, collectionName));
-					  		if(callback)
+					  		if(null != callback)
 								callback(err, o.n);
 						}
 					  	else {
 					  		logger.info(util.format('result %d when deleting element in collection %s', o.ok, collectionName));
-					  		if(callback)
+					  		if(null != callback)
 					  			callback(new Error('delete was not ok'));
 					  	}
 					}
@@ -401,26 +407,32 @@ var Model = (function(){
 		logger.trace('@Model.get');
 
 		var getCallback = function(err, col) {
-			if(err) {
+			if(null != err) {
 				logger.trace(util.format('@getCallback...err is not null: %s.', err));
-				if(callback)
+				if(null != callback)
 					callback(err, null);
 			}
 			else {
-				col.findOne({'_id' : id}, function(err, r){
-					if(err) {
-						if(callback)
+				var query = { _id: id};
+				if("string" == typeof id)
+					query._id =  new ObjectID(id);
+
+				logger.trace(util.format('@getCallback...going to try to find id: %s which is type', id, typeof id));
+				//logger.trace(util.format('@getCallback...col: %s', util.inspect(col)));
+				col.findOne( query ,  function(err, r){
+					if(null != err) {
+						if(null != callback)
 							callback(err);
 					}
 					else {
-						if(r){
+						if(null != r){
 						  	logger.info(util.format('got %s element in collection %s', JSON.stringify(r), collectionName));
-					  		if(callback)
+					  		if(null != callback)
 								callback(null, r);
 						}
 					  	else {
 					  		logger.info(util.format('no result when getting element in collection %s', collectionName));
-					  		if(callback)
+					  		if(null != callback)
 					  			callback(new Error('get was not ok'));
 					  	}
 					}
@@ -428,7 +440,7 @@ var Model = (function(){
 			}
 		};
 
-		if(collectionMap[collectionName]){
+		if(null != collectionMap[collectionName]){
 			getCallback(null,collectionMap[collectionName]);
 		}
 		else 

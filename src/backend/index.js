@@ -1,19 +1,15 @@
 var express = require('express');
 var util = require('util');
 var favicon = require('serve-favicon');
-var bodyParser = require('body-parser');
-var methodOverride = require('method-override');
 var cookieSession = require('cookie-session');
 var uuid = require('uuid');
 var cookieParser = require('cookie-parser');
-var multer = require('multer'); 
 var PragmaLogger = require('pragma-logger');
 
 
 //CONSTANTS
 var PORT=8080;
 var BODY_MAX_SIZE = '10240kb';
-
 
 var logger = new PragmaLogger({
     logger: {
@@ -36,24 +32,15 @@ var cookieSessionProps = {
     maxAge : 30*24*60*60*1000
   }
 };
-var bodyParserProps = { extended: true, limit: '10240kb' } ;
 
 //custom modules
 var custom = require('./custom.js');
-var items = require('./items/route.js');
-//var images = require('./images');
-//var categories = require('./categories');
-//var subcategories = require('./subcategories');
+var collections = require('./collections/route.js');
 
 var app = express();
 
 app.use(cookieSession(cookieSessionProps));
 app.use(cookieParser());
-app.use(bodyParser.json()); // for parsing application/json
-app.use(bodyParser.urlencoded(bodyParserProps)); // for parsing application/x-www-form-urlencoded
-app.use(multer()); // for parsing multipart/form-data
-app.use(methodOverride());
-
 app.set('port', process.env.PORT || PORT);
 
 /*
@@ -71,15 +58,11 @@ else
 	app.use(express.static('dist/ui', options));
 */
 
-app.use('/api/items', items);
-/*
-app.use('/api/images', images);
-app.use('/api/categories', categories);
-app.use('/api/subcategories', subcategories);
-*/
+app.use('/api/collections', collections);
+
 // custom 404 page
 app.use(function(req, res){
-	logger.info(util.format('reached 404: %s', JSON.stringify(req)));
+	//logger.info(util.format('reached 404: %s', util.inspect(req)));
 	res.type('text/plain');
 	res.status(404);
 	res.send('404 - Not Found');

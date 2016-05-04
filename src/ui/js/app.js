@@ -94,7 +94,7 @@ App.prototype.start = function(){
 			this.throw('!!! botstrap module not previously loaded: ' + modName + '!!!');
 
 		// TODO asynch
-		bootstrapMod.addContext({ container: this.context.dollarMap });
+		bootstrapMod.addContext({ dollarMap: this.context.dollarMap });
 		bootstrapMod.start();
 		this.logger.debug('called run on module instance '+ modName);
 	}

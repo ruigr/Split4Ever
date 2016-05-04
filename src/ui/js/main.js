@@ -18,7 +18,9 @@ var classForName = function(clazz){
 var APP = new function(){
 
 	var running = false;
-	var appModulesConf = { requires: [ 'Utils', 'Constants', 'PubSub', 'UiShell', 'Header', 'Footer' ] };
+	var appModulesConf = { requires: [ 'Utils', 'Constants', 'PubSub', 
+		'UiShell', 'Header', 'Footer', 'Item' 
+		, 'ItemUi', 'ImageCache' ] };
 	var bootContext = { bootstrapModules: ['uishell', 'header', 'footer'] };
 	var app = new App('app');
 	app.addConfiguration(appModulesConf);

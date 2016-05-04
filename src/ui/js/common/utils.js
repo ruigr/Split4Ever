@@ -8,18 +8,15 @@ Utils.prototype.constructor = Utils;
 
 Utils.prototype.init = function(){
 	Module.prototype.init.call(this);
-	this.logger.in('init');
-	
-
 	if( null == s )
 		this.throw('!!! Utils module requires underscore.string.js global external library !!!');
-	this.logger.out('init');
+
 };
 
 Utils.prototype.printf = function(msg, varArr){
-	var args = [];
-	args.concat(msg, varArr);
-	s.sprintf.apply(this, args);
+	var args = [msg];
+	args = args.concat(varArr);
+	return s.sprintf.apply(this, args);
 };
 
 Utils.prototype.readFileAsBase64 = function(file, callback){
@@ -64,7 +61,7 @@ Utils.prototype.createElement = function(elementType, classesArray, attributesAr
 
 	var element = document.createElement(elementType);
 
-	if(null != classesArray) {
+	if(null != classesArray && Array.isArray(classesArray)) {
 		classesArray.forEach(
 			function(item){
 				element.classList.add(item);
@@ -72,7 +69,7 @@ Utils.prototype.createElement = function(elementType, classesArray, attributesAr
 		);
 	}
 	
-	if(null != attributesArray){
+	if(null != attributesArray && Array.isArray(attributesArray)){
 		attributesArray.forEach(
 			function(item){
 				element.setAttribute(item.name, item.value);

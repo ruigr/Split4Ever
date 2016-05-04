@@ -19,7 +19,7 @@ PubSub.prototype.subscribe = function(events, subscriber){
 		}
 		subscribers = this.context.eventSubscribers[ev];
 		subscribers[subscribers.length] = subscriber;	
-		utils.printf(['subscriber %s subscribing event %s ', subscriber.getName(), ev]);
+		utils.printf('subscriber %s subscribing event %s ', [subscriber.getName(), ev]);
 	}
 	this.logger.out('subscribe');
 };
@@ -37,7 +37,7 @@ PubSub.prototype.unsubscribe = function(events, subscriber){
 				subs.splice(index,1)
 			}
 		}
-		utils.printf(['subscriber %s unsubscribing event %s ', subscriber.getName(), ev]);
+		utils.printf('subscriber %s unsubscribing event %s ', [subscriber.getName(), ev]);
 	}
 	this.logger.out('unsubscribe');
 };
@@ -46,7 +46,8 @@ PubSub.prototype.unsubscribe = function(events, subscriber){
 PubSub.prototype.publish = function(event, data, doAsynch){
 	this.logger.in('publish');
 	var utils = this.config.modules['utils'];
-	utils.printf(['publishing event %s with data: %s', event, JSON.stringify(data)]);
+	this.logger.debug(
+	utils.printf('publishing event %s with data: %s', [event, JSON.stringify(data)]));
 
 	var subs = this.context.eventSubscribers[event];
 	if(null != subs && Array.isArray(subs) ){
