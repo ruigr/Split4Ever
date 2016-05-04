@@ -6,7 +6,7 @@ var model = require('../dist/backend/model.js');
 var custom = require('../dist/backend/custom.js');
 var logger = custom.createLogger('tests');
 
-var TEST_COLLECTION = 'itemstest';
+var TEST_COLLECTION = 'testcolls';
 var createTestSubject = function(){
 	 return custom.createDummyItem(true);
 }
@@ -149,6 +149,7 @@ describe('model test - items', function() {
 						done();
 		    		}
 				};
+				logger.info(util.format('going to get id: ', item._id));
 			model.get(TEST_COLLECTION, item._id, callback);
 		});
 	});	

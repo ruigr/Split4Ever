@@ -69,8 +69,7 @@ module.exports = function(grunt) {
     			},
 			css: {
         			src: [
-                        'src/ui/css/bootstrap.css',
-            			'src/ui/css/custom.css' 
+                        'src/ui/css/*.css'
         			],
         			dest: 'dist/ui/css/main.css'
     			}
