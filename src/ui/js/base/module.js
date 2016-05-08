@@ -1,12 +1,17 @@
 
+/*
+	basic module, should be extended by all ui classes
+*/
 var Module = function(name){
 	this.name = name;
+	// configuration related map, should be provided before start
 	this.config = {
 		requires: [] //string array with required mdule names
 		, events: []
 		, modules: {} // modules map: name -> mod
 		, loggerLevel : 0
 	}; 
+	// context/state related map, to be used in run time
 	this.context = {
 		anchor_map : {}	
 		, dollarMap: {}
@@ -68,7 +73,7 @@ var Module = function(name){
 }
 
 /*
-	sets up modules
+	sets up required modules
 	register to events on pubsub
 */
 Module.prototype.init = function(){
@@ -111,22 +116,23 @@ Module.prototype.init = function(){
 	this.logger.out('init');
 };
 
+/* cleanup code */
 Module.prototype.shutdown = function(){
 	this.logger.debug(this.name + ".shutdown is not implemented");
 };
-
+/* start module main functionality */
 Module.prototype.start = function(){
 	this.logger.debug(this.name + ".run is not implemented");
 };
-
+/* stop module functionality */
 Module.prototype.stop = function(){
 	this.logger.debug(this.name + ".halt is not implemented");
 };
-
+/* reacts to events from the pubsub module, or any other event producing module for that matter */
 Module.prototype.onEvent = function(event,context){
 	this.logger.debug(this.name + ".onEvent is not implemented");
 };
-
+/* get map of jquery dom pointers */
 Module.prototype.getDollarMap = function(){
 	return this.context.dollarMap;
 };
@@ -143,18 +149,21 @@ Module.prototype.throw = function(msg){
 	throw new Error( "origin: " + this.name + " | msg: " + msg );
 };
 
+/* add entry to existing dollar map */
 Module.prototype.add2DollarMap = function(key, val){
 	this.logger.in('add2DollarMap');
 	Object.defineProperty(this.context.dollarMap, key, { value: val });
 	this.logger.out('add2DollarMap');
 };
 
+/* add entry to existing context map */
 Module.prototype.add2Context = function(key, val){
 	this.logger.in('add2Context');
 	Object.defineProperty(this.context, key, { value: val });
 	this.logger.out('add2Context');
 };
 
+/* add provided context map entries to existing context map */
 Module.prototype.addContext = function(ctxMap){
 	this.logger.in('addContext');
 	for (var key in ctxMap) {
@@ -165,6 +174,7 @@ Module.prototype.addContext = function(ctxMap){
 	this.logger.out('addContext');
 };
 
+/* add provided configuration map entries to existing config map */
 Module.prototype.addConfiguration = function(confMap){
 	this.logger.in('addConfiguration');
 	for (var key in confMap) {
