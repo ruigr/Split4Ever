@@ -12,7 +12,7 @@ Steps:
  - > vagrant up
  - > vagrant ssh
  
- Note: You can do "=> vagrant destroy && vagrant up" to rebuild from the start 
- or use "=> vagrant provision". For more information use "=> vagrant help"
+ Note: You can do "> vagrant destroy && vagrant up" to rebuild from the start 
+ or use "> vagrant provision". For more information use "> vagrant help"
  
 
